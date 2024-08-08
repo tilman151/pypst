@@ -10,8 +10,8 @@ class Table:
     header_data: list[list["Cell"]]
     index_data: list[list["Cell"]]
     row_data: list[list["Cell"]]
-    columns: Optional[int]
-    rows: Optional[int]
+    columns: Optional[int | str | list[str]]
+    rows: Optional[int | str | list[str]]
 
     def __init__(self) -> None:
         self.header_data = []
@@ -59,9 +59,11 @@ class Table:
     def _render_args(self) -> str:
         args = []
         if self.columns is not None:
-            args.append(f"columns: {self.columns}")
+            columns = _render_col_row_arg(self.columns)
+            args.append(f"columns: {columns}")
         if self.rows is not None:
-            args.append(f"rows: {self.rows}")
+            rows = _render_col_row_arg(self.rows)
+            args.append(f"rows: {rows}")
         rendered_args = ",\n".join(args) + ",\n"
 
         return rendered_args
@@ -178,3 +180,18 @@ def _get_span_arg(direction: Literal["rows", "cols"]) -> str:
         raise ValueError(f"Invalid direction: {direction}")
 
     return span_arg
+
+
+def _render_col_row_arg(arg: int | str | list[str]) -> str:
+    if isinstance(arg, int):
+        rendered_arg = str(arg)
+    elif isinstance(arg, str):
+        rendered_arg = arg
+    elif isinstance(arg, list):
+        if not all(isinstance(a, str) for a in arg):
+            raise ValueError("All elements in the list must be strings")
+        rendered_arg = f"({', '.join(a for a in arg)})"
+    else:
+        raise ValueError(f"Invalid table argument type: {type(arg)}")
+
+    return rendered_arg
