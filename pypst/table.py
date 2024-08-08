@@ -1,3 +1,4 @@
+import itertools
 from typing import Any, Optional, Union
 
 import pandas as pd
@@ -24,7 +25,8 @@ class Table:
         return self.render()
 
     def render(self) -> str:
-        table = "table.header" + "".join(header.render() for header in self.headers)
+        headers = itertools.chain(*self.headers)
+        table = "table.header" + "".join(header.render() for header in headers)
         table = f"#table(\ncolumns: {self.num_columns},\n{table}\n)"
 
         return table
@@ -69,31 +71,38 @@ class Cell:
         return cell
 
 
-def _parse_index(columns: Union[pd.Index, pd.MultiIndex]) -> list["Cell"]:
+def _parse_index(columns: Union[pd.Index, pd.MultiIndex]) -> list[list["Cell"]]:
     if columns.empty:
-        headers = []
+        headers = [[]]
     elif isinstance(columns, pd.MultiIndex):
         headers = _parse_multi_index(columns)
     else:
-        headers = [Cell(header, colspan=1) for header in columns]
+        headers = [[Cell(header, colspan=1) for header in columns]]
 
     return headers
 
 
-def _parse_multi_index(columns: pd.MultiIndex) -> list["Cell"]:
+def _parse_multi_index(columns: pd.MultiIndex) -> list[list["Cell"]]:
     assert not columns.empty
     headers = []
-    for level, level_codes in enumerate(columns.codes):
-        colspan = 0
-        prev_code = level_codes[0]
-        for code in level_codes:
-            header_name = columns.levels[level][code]
-            if code == prev_code:
-                colspan += 1
-            else:
-                headers.append(Cell(columns.levels[level][prev_code], colspan=colspan))
-                prev_code = code
-                colspan = 1
-        headers.append(Cell(header_name, colspan=colspan))
+    for level in range(columns.nlevels):
+        headers.append(_parse_level(columns, level))
+
+    return headers
+
+
+def _parse_level(columns, level):
+    level_codes = columns.codes[level]
+    headers = []
+    colspan = 0
+    prev_code = level_codes[0]
+    for code in level_codes:
+        if code == prev_code:
+            colspan += 1
+        else:
+            headers.append(Cell(columns.levels[level][prev_code], colspan=colspan))
+            prev_code = code
+            colspan = 1
+    headers.append(Cell(columns.levels[level][-1], colspan=colspan))
 
     return headers
