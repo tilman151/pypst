@@ -17,7 +17,8 @@ class Table:
         table = cls()
         table.headers = _parse_index(df.columns, direction="cols")
         table.index = _parse_index(df.index, direction="rows")
-        table.rows = [[Cell()] * len(df.columns)] * len(df)
+        for _, *row in df.itertuples():
+            table.rows.append([Cell(value) for value in row])
         table.num_columns = len(df.columns) + df.index.nlevels
 
         return table

@@ -45,9 +45,9 @@ def test_render_simple_table(df):
     table = Table.from_dataframe(df)
     assert table.render() == (
         "#table(\ncolumns: 4,\ntable.header[][A][B][C],"
-        "\n[0], [], [], [],"
-        "\n[1], [], [], [],"
-        "\n[2], [], [], [],\n)"
+        "\n[0], [1], [4], [7],"
+        "\n[1], [2], [5], [8],"
+        "\n[2], [3], [6], [9],\n)"
     )
 
 
@@ -58,9 +58,9 @@ def test_render_multi_header(df_multi_index):
         "table.header[#table.cell(rowspan: 2)[]]"
         "[#table.cell(colspan: 2)[A]][#table.cell(colspan: 2)[B]]"
         "[X][Y][X][Y],\n"
-        "[0], [], [], [], [],\n"
-        "[1], [], [], [], [],\n"
-        "[2], [], [], [], [],\n)"
+        "[0], [1], [4], [7], [10],\n"
+        "[1], [2], [5], [8], [11],\n"
+        "[2], [3], [6], [9], [12],\n)"
     )
 
 
@@ -70,10 +70,10 @@ def test_render_multi_index(df_multi_index):
         "#table(\n"
         "columns: 5,\n"
         "table.header[#table.cell(colspan: 2)[]][0][1][2],\n"
-        "[#table.cell(rowspan: 2)[A]], [X], [], [], [],\n"
-        "[Y], [], [], [],\n"
-        "[#table.cell(rowspan: 2)[B]], [X], [], [], [],\n"
-        "[Y], [], [], [],\n"
+        "[#table.cell(rowspan: 2)[A]], [X], [1], [2], [3],\n"
+        "[Y], [4], [5], [6],\n"
+        "[#table.cell(rowspan: 2)[B]], [X], [7], [8], [9],\n"
+        "[Y], [10], [11], [12],\n"
         ")"
     )
 
