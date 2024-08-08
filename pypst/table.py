@@ -3,8 +3,14 @@ from typing import Any, Optional, Union, Literal
 
 import pandas as pd
 
+__all__ = ["Table", "Cell"]
+
 
 class Table:
+    headers: list[list["Cell"]]
+    index: list[list["Cell"]]
+    rows: list[list["Cell"]]
+
     def __init__(self) -> None:
         self.headers = []
         self.index = []
@@ -100,6 +106,7 @@ class Cell:
 def _parse_index(
     index: Union[pd.Index, pd.MultiIndex], direction: Literal["rows", "cols"]
 ) -> list[list["Cell"]]:
+    headers: list[list[Cell]]
     if index.empty:
         headers = [[]]
     elif isinstance(index, pd.MultiIndex):
