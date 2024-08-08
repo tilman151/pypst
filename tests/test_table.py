@@ -43,16 +43,38 @@ def test_from_dataframe_multi_headers(df_multi_index):
 
 def test_render_simple_table(df):
     table = Table.from_dataframe(df)
-    assert table.render() == "#table(\ncolumns: 3,\ntable.header[A][B][C]\n)"
+    assert table.render() == (
+        "#table(\ncolumns: 4,\ntable.header[][A][B][C],"
+        "\n[0], [], [], [],"
+        "\n[1], [], [], [],"
+        "\n[2], [], [], [],\n)"
+    )
 
 
-def test_render_multi_table(df_multi_index):
+def test_render_multi_header(df_multi_index):
     table = Table.from_dataframe(df_multi_index)
-    assert (
-        table.render() == "#table(\ncolumns: 4,\n"
-        "table.header[#table.cell(colspan: 2)[A]]"
-        "[#table.cell(colspan: 2)[B]]"
-        "[X][Y][X][Y]\n)"
+    assert table.render() == (
+        "#table(\ncolumns: 5,\n"
+        "table.header[#table.cell(rowspan: 2)[]]"
+        "[#table.cell(colspan: 2)[A]][#table.cell(colspan: 2)[B]]"
+        "[X][Y][X][Y],\n"
+        "[0], [], [], [], [],\n"
+        "[1], [], [], [], [],\n"
+        "[2], [], [], [], [],\n)"
+    )
+
+
+def test_render_multi_index(df_multi_index):
+    table = Table.from_dataframe(df_multi_index.T)
+    assert table.render() == (
+        "#table(\n"
+        "columns: 5,\n"
+        "table.header[#table.cell(colspan: 2)[]][0][1][2],\n"
+        "[#table.cell(rowspan: 2)[A]], [X], [], [], [],\n"
+        "[Y], [], [], [],\n"
+        "[#table.cell(rowspan: 2)[B]], [X], [], [], [],\n"
+        "[Y], [], [], [],\n"
+        ")"
     )
 
 
@@ -63,6 +85,21 @@ def test_compilation(table, tmp_path, request):
         f.write(Table.from_dataframe(table).render())
 
     typst.compile(tmp_path / "table.typ")
+
+
+@pytest.mark.skip("Visual test")
+def test_compilation_visual(df, df_multi_index):
+    table = (
+        Table.from_dataframe(df).render()
+        + "\n"
+        + Table.from_dataframe(df_multi_index).render()
+        + "\n"
+        + Table.from_dataframe(df_multi_index.T).render()
+    )
+    with open("table.typ", mode="wt") as f:
+        f.write(table)
+
+    typst.compile("table.typ", "table.pdf")
 
 
 class TestCell:

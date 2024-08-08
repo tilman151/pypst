@@ -1,5 +1,5 @@
 import itertools
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, Literal
 
 import pandas as pd
 
@@ -11,13 +11,14 @@ class Table:
         self.rows = []
 
         self.num_columns = 0
-        self.num_rows = 0
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame) -> "Table":
         table = cls()
-        table.headers = _parse_index(df.columns)
-        table.num_columns = len(df.columns)
+        table.headers = _parse_index(df.columns, direction="cols")
+        table.index = _parse_index(df.index, direction="rows")
+        table.rows = [[Cell()] * len(df.columns)] * len(df)
+        table.num_columns = len(df.columns) + df.index.nlevels
 
         return table
 
@@ -26,8 +27,27 @@ class Table:
 
     def render(self) -> str:
         headers = itertools.chain(*self.headers)
-        table = "table.header" + "".join(header.render() for header in headers)
-        table = f"#table(\ncolumns: {self.num_columns},\n{table}\n)"
+        index_placeholder = Cell(rowspan=len(self.headers), colspan=len(self.index))
+        table = (
+            "table.header"
+            + index_placeholder.render()
+            + "".join(header.render() for header in headers)
+            + ",\n"
+        )
+        rowspans = [0] * len(self.index)
+        current_indices = [0] * len(self.index)
+        for row in self.rows:
+            for level in range(len(self.index)):
+                current_index = current_indices[level]
+                rowspan = rowspans[level]
+                if rowspan == 0:
+                    index_cell = self.index[level][current_index]
+                    table += index_cell.render() + ", "
+                    current_indices[level] += 1
+                    rowspans[level] = index_cell.rowspan
+                rowspans[level] -= 1
+            table += ", ".join(cell.render() for cell in row) + ",\n"
+        table = f"#table(\ncolumns: {self.num_columns},\n{table})"
 
         return table
 
@@ -71,38 +91,58 @@ class Cell:
         return cell
 
 
-def _parse_index(columns: Union[pd.Index, pd.MultiIndex]) -> list[list["Cell"]]:
-    if columns.empty:
+def _parse_index(
+    index: Union[pd.Index, pd.MultiIndex], direction: Literal["rows", "cols"]
+) -> list[list["Cell"]]:
+    if index.empty:
         headers = [[]]
-    elif isinstance(columns, pd.MultiIndex):
-        headers = _parse_multi_index(columns)
+    elif isinstance(index, pd.MultiIndex):
+        headers = _parse_multi_index(index, direction)
     else:
-        headers = [[Cell(header, colspan=1) for header in columns]]
+        headers = [[Cell(header, colspan=1) for header in index]]
 
     return headers
 
 
-def _parse_multi_index(columns: pd.MultiIndex) -> list[list["Cell"]]:
-    assert not columns.empty
+def _parse_multi_index(
+    index: pd.MultiIndex, direction: Literal["rows", "cols"]
+) -> list[list["Cell"]]:
+    assert not index.empty
     headers = []
-    for level in range(columns.nlevels):
-        headers.append(_parse_level(columns, level))
+    for level in range(index.nlevels):
+        headers.append(_parse_level(index, level, direction))
 
     return headers
 
 
-def _parse_level(columns, level):
-    level_codes = columns.codes[level]
+def _parse_level(
+    index: pd.MultiIndex, level: int, direction: Literal["rows", "cols"]
+) -> list["Cell"]:
+    span_arg = _get_span_arg(direction)
+    level_codes = index.codes[level]
     headers = []
-    colspan = 0
+    span = 0
     prev_code = level_codes[0]
     for code in level_codes:
         if code == prev_code:
-            colspan += 1
+            span += 1
         else:
-            headers.append(Cell(columns.levels[level][prev_code], colspan=colspan))
+            headers.append(Cell(index.levels[level][prev_code]))
+            setattr(headers[-1], span_arg, span)
             prev_code = code
-            colspan = 1
-    headers.append(Cell(columns.levels[level][-1], colspan=colspan))
+            span = 1
+    headers.append(Cell(index.levels[level][-1]))
+    setattr(headers[-1], span_arg, span)
 
     return headers
+
+
+def _get_span_arg(direction: Literal["rows", "cols"]) -> str:
+    if direction == "rows":
+        span_arg = "rowspan"
+    elif direction == "cols":
+        span_arg = "colspan"
+    else:
+        raise ValueError(f"Invalid direction: {direction}")
+
+    return span_arg
