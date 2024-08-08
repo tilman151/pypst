@@ -30,25 +30,30 @@ class Table:
         headers = itertools.chain(*self.headers)
         index_placeholder = Cell(rowspan=len(self.headers), colspan=len(self.index))
         table = (
-            "table.header"
+            f"#table(\ncolumns: {self.num_columns},\n"
+            + "table.header"
             + index_placeholder.render()
             + "".join(header.render() for header in headers)
             + ",\n"
+            + self._render_rows()
+            + ")"
         )
-        rowspans = [0] * len(self.index)
-        current_indices = [0] * len(self.index)
+
+        return table
+
+    def _render_rows(self) -> str:
+        table = ""
+        rows_to_skip = [0] * len(self.index)
+        index_positions = [0] * len(self.index)
         for row in self.rows:
             for level in range(len(self.index)):
-                current_index = current_indices[level]
-                rowspan = rowspans[level]
-                if rowspan == 0:
-                    index_cell = self.index[level][current_index]
+                if rows_to_skip[level] == 0:
+                    index_cell = self.index[level][index_positions[level]]
                     table += index_cell.render() + ", "
-                    current_indices[level] += 1
-                    rowspans[level] = index_cell.rowspan
-                rowspans[level] -= 1
+                    index_positions[level] += 1
+                    rows_to_skip[level] = index_cell.rowspan
+                rows_to_skip[level] -= 1
             table += ", ".join(cell.render() for cell in row) + ",\n"
-        table = f"#table(\ncolumns: {self.num_columns},\n{table})"
 
         return table
 
