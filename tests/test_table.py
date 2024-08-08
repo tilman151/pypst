@@ -30,12 +30,12 @@ def df_multi_index():
 
 def test_from_dataframe_simple_headers(df):
     table = Table.from_dataframe(df)
-    assert table.headers == [[Cell("A"), Cell("B"), Cell("C")]]
+    assert table.header_data == [[Cell("A"), Cell("B"), Cell("C")]]
 
 
 def test_from_dataframe_multi_headers(df_multi_index):
     table = Table.from_dataframe(df_multi_index)
-    assert table.headers == [
+    assert table.header_data == [
         [Cell("A", colspan=2), Cell("B", colspan=2)],
         [Cell("X"), Cell("Y"), Cell("X"), Cell("Y")],
     ]

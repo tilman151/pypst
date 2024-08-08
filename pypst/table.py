@@ -7,36 +7,45 @@ __all__ = ["Table", "Cell"]
 
 
 class Table:
-    headers: list[list["Cell"]]
-    index: list[list["Cell"]]
-    rows: list[list["Cell"]]
+    header_data: list[list["Cell"]]
+    index_data: list[list["Cell"]]
+    row_data: list[list["Cell"]]
+    columns: Optional[int]
+    rows: Optional[int]
 
     def __init__(self) -> None:
-        self.headers = []
-        self.index = []
-        self.rows = []
+        self.header_data = []
+        self.index_data = []
+        self.row_data = []
 
-        self.num_columns = 0
+        self.columns = None
+        self.rows = None
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame) -> "Table":
         table = cls()
-        table.headers = _parse_index(df.columns, direction="cols")
-        table.index = _parse_index(df.index, direction="rows")
+        table.header_data = _parse_index(df.columns, direction="cols")
+        table.index_data = _parse_index(df.index, direction="rows")
         for _, *row in df.itertuples():
-            table.rows.append([Cell(value) for value in row])
-        table.num_columns = len(df.columns) + df.index.nlevels
+            table.row_data.append([Cell(value) for value in row])
+        table.columns = len(df.columns) + df.index.nlevels
 
         return table
 
     def __str__(self) -> str:
         return self.render()
 
+    def __repr__(self) -> str:
+        return f"Table(headers={self.header_data}, index={self.index_data}, rows={self.row_data})"
+
     def render(self) -> str:
-        headers = itertools.chain(*self.headers)
-        index_placeholder = Cell(rowspan=len(self.headers), colspan=len(self.index))
+        headers = itertools.chain(*self.header_data)
+        index_placeholder = Cell(
+            rowspan=len(self.header_data), colspan=len(self.index_data)
+        )
         table = (
-            f"#table(\ncolumns: {self.num_columns},\n"
+            "#table(\n"
+            + self._render_args()
             + "table.header"
             + index_placeholder.render()
             + "".join(header.render() for header in headers)
@@ -47,14 +56,24 @@ class Table:
 
         return table
 
+    def _render_args(self) -> str:
+        args = []
+        if self.columns is not None:
+            args.append(f"columns: {self.columns}")
+        if self.rows is not None:
+            args.append(f"rows: {self.rows}")
+        rendered_args = ",\n".join(args) + ",\n"
+
+        return rendered_args
+
     def _render_rows(self) -> str:
         table = ""
-        rows_to_skip = [0] * len(self.index)
-        index_positions = [0] * len(self.index)
-        for row in self.rows:
-            for level in range(len(self.index)):
+        rows_to_skip = [0] * len(self.index_data)
+        index_positions = [0] * len(self.index_data)
+        for row in self.row_data:
+            for level in range(len(self.index_data)):
                 if rows_to_skip[level] == 0:
-                    index_cell = self.index[level][index_positions[level]]
+                    index_cell = self.index_data[level][index_positions[level]]
                     table += index_cell.render() + ", "
                     index_positions[level] += 1
                     rows_to_skip[level] = index_cell.rowspan
