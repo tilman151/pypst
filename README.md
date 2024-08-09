@@ -55,17 +55,17 @@ The resulting file looks like this:
 
 ```typst
 #figure(
-table(
-columns: 4,
-stroke: none,
-align: (x, _) => if calc.odd(x) {left} else {right},
-table.hline(y: 2, stroke: 1.5pt),
-table.hline(y: 3, stroke: 1.5pt),
-table.header[][City][Name][Age],
-[0], [Los Angeles], [1], [30.0],
-[1], [New York], [2], [30.0],
-),
-caption: "This is my table."
+  table(
+    columns: 3,
+    stroke: none,
+    align: (x, _) => if calc.odd(x) {left} else {right},
+    table.hline(y: 1, stroke: 1.5pt),
+    table.hline(y: 3, stroke: 1.5pt),
+    table.header[][Name][Age],
+    [Los Angeles], [1], [30.0],
+    [New York], [2], [30.0]
+  ),
+  caption: "This is my table."
 )
 ```
 
@@ -98,17 +98,17 @@ The resulting file looks like this:
 #import "@preview/unify:0.4.3": num
 
 #figure(
-table(
-columns: 4,
-stroke: none,
-align: (x, _) => if calc.odd(x) {left} else {right},
-table.hline(y: 2, stroke: 1.5pt),
-table.hline(y: 3, stroke: 1.5pt),
-table.header[][City][Name][Age],
-[0], [Los Angeles], [1], [30.0],
-[1], [New York], [2], [30.0],
-),
-caption: "This is my table."
+  table(
+    columns: 3,
+    stroke: none,
+    align: (x, _) => if calc.odd(x) {left} else {right},
+    table.hline(y: 1, stroke: 1.5pt),
+    table.hline(y: 3, stroke: 1.5pt),
+    table.header[][Name][Age],
+    [Los Angeles], [1], [30.0],
+    [New York], [2], [30.0]
+  ),
+  caption: "This is my table."
 )
 ```
 

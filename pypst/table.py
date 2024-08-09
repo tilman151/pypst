@@ -177,17 +177,17 @@ class Table:
         index_placeholder = Cell(
             rowspan=len(self.header_data), colspan=len(self.index_data)
         )
-        table = (
-            "#table(\n"
-            + self._render_args()
+        inner = (
+            self._render_args()
             + self._render_lines()
             + "table.header"
             + index_placeholder.render()
             + "".join(header.render() for header in headers)
             + ",\n"
             + self._render_rows()
-            + ")"
         )
+        # indent body and args by 2 spaces
+        table = "#table(\n  " + inner.replace("\n", "\n  ") + "\n)"
 
         return table
 
@@ -230,6 +230,7 @@ class Table:
                     rows_to_skip[level] = index_cell.rowspan
                 rows_to_skip[level] -= 1
             table += ", ".join(cell.render() for cell in row) + ",\n"
+        table = table[:-2]  # remove trailing comma and newline
 
         return table
 

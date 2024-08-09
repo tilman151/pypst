@@ -32,4 +32,7 @@ class Figure:
         if self.outlined is not None:
             args.append(f"outlined: {'true' if self.outlined else 'false'}")
 
-        return "#figure(\n{0}\n)".format(",\n".join(args))
+        # indent body and args by 2 spaces
+        inner = ",\n".join(args).replace("\n", "\n  ")
+
+        return "#figure(\n  {0}\n)".format(inner)

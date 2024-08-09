@@ -19,56 +19,61 @@ def test_from_dataframe_multi_headers(df_multi_header):
 
 
 def test_render_simple_table(df):
-    assert df.render() == (
+    rendered = df.render().replace("\n  ", "\n")
+    assert rendered == (
         "#table(\ncolumns: 4,\ntable.header[][A][B][C],"
         "\n[0], [1], [4], [7],"
         "\n[1], [2], [5], [8],"
-        "\n[2], [3], [6], [9],\n)"
+        "\n[2], [3], [6], [9]\n)"
     )
 
 
 def test_render_multi_header(df_multi_header):
-    assert df_multi_header.render() == (
+    rendered = df_multi_header.render().replace("\n  ", "\n")
+    assert rendered == (
         "#table(\ncolumns: 5,\n"
         "table.header[#table.cell(rowspan: 2)[]]"
         "[#table.cell(colspan: 2)[A]][#table.cell(colspan: 2)[B]]"
         "[X][Y][X][Y],\n"
         "[0], [1], [4], [7], [10],\n"
         "[1], [2], [5], [8], [11],\n"
-        "[2], [3], [6], [9], [12],\n)"
+        "[2], [3], [6], [9], [12]\n)"
     )
 
 
 def test_render_multi_index(df_multi_index):
-    assert df_multi_index.render() == (
+    rendered = df_multi_index.render().replace("\n  ", "\n")
+    assert rendered == (
         "#table(\n"
         "columns: 5,\n"
         "table.header[#table.cell(colspan: 2)[]][0][1][2],\n"
         "[#table.cell(rowspan: 2)[A]], [X], [1], [2], [3],\n"
         "[Y], [4], [5], [6],\n"
         "[#table.cell(rowspan: 2)[B]], [X], [7], [8], [9],\n"
-        "[Y], [10], [11], [12],\n"
+        "[Y], [10], [11], [12]\n"
         ")"
     )
 
 
 def test_render_custom_col(df):
     df.columns = ["10%", "20%", "30%", "40%"]
-    assert df.render() == (
+    rendered = df.render().replace("\n  ", "\n")
+    assert rendered == (
         "#table(\ncolumns: (10%, 20%, 30%, 40%),\ntable.header[][A][B][C],"
         "\n[0], [1], [4], [7],"
         "\n[1], [2], [5], [8],"
-        "\n[2], [3], [6], [9],\n)"
+        "\n[2], [3], [6], [9]\n)"
     )
 
 
 def test_render_custom_row(df):
     df.rows = ["10%", "20%", "30%", "40%"]
-    assert df.render() == (
+    rendered = df.render().replace("\n  ", "\n")
+    assert rendered == (
         "#table(\ncolumns: 4,\nrows: (10%, 20%, 30%, 40%),\ntable.header[][A][B][C],"
         "\n[0], [1], [4], [7],"
         "\n[1], [2], [5], [8],"
-        "\n[2], [3], [6], [9],\n)"
+        "\n[2], [3], [6], [9]\n)"
     )
 
 
@@ -84,11 +89,12 @@ def test_render_custom_row(df):
 )
 def test_render_custom_stroke(df, stroke, rendered_stroke):
     df.stroke = stroke
-    assert df.render() == (
+    rendered = df.render().replace("\n  ", "\n")
+    assert rendered == (
         f"#table(\ncolumns: 4,\nstroke: {rendered_stroke},\ntable.header[][A][B][C],"
         "\n[0], [1], [4], [7],"
         "\n[1], [2], [5], [8],"
-        "\n[2], [3], [6], [9],\n)"
+        "\n[2], [3], [6], [9]\n)"
     )
 
 
@@ -102,11 +108,12 @@ def test_render_custom_stroke(df, stroke, rendered_stroke):
 )
 def test_render_custom_align(df, align, rendered_align):
     df.align = align
-    assert df.render() == (
+    rendered = df.render().replace("\n  ", "\n")
+    assert rendered == (
         f"#table(\ncolumns: 4,\nalign: {rendered_align},\ntable.header[][A][B][C],"
         "\n[0], [1], [4], [7],"
         "\n[1], [2], [5], [8],"
-        "\n[2], [3], [6], [9],\n)"
+        "\n[2], [3], [6], [9]\n)"
     )
 
 
@@ -123,11 +130,12 @@ def test_render_lines(df, lines, rendered_lines):
             df.add_hline(line)
         else:
             df.add_vline(line)
-    assert df.render() == (
+    rendered = df.render().replace("\n  ", "\n")
+    assert rendered == (
         f"#table(\ncolumns: 4,\n{rendered_lines},\ntable.header[][A][B][C],"
         "\n[0], [1], [4], [7],"
         "\n[1], [2], [5], [8],"
-        "\n[2], [3], [6], [9],\n)"
+        "\n[2], [3], [6], [9]\n)"
     )
 
 
