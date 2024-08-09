@@ -81,7 +81,7 @@ Include the file in your `main.typ` Typst document.
 #lorem(100)
 ```
 
-Compile with `typst compile main.typ` to receive a PDF file like [this]("main.pdf").
+Compile with `typst compile main.typ` to receive a PDF file like [this](examples/main.pdf).
 By using `typst watch main.typ`, you can automatically recompile the when your Python script runs.
 
 
