@@ -122,8 +122,6 @@ class Table:
             self._stroke.freeze()
         elif isinstance(value, dict):
             self._stroke = frozendict(value)
-        elif value is None:
-            self._stroke = "none"  # disables stroke in Typst
         else:
             self._stroke = value
 

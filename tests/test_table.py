@@ -75,7 +75,7 @@ def test_render_custom_row(df):
 @pytest.mark.parametrize(
     "stroke, rendered_stroke",
     [
-        (None, "none"),
+        ("none",) * 2,
         ("3pt",) * 2,
         ("(x, _) => if x > 1 { 1pt } else { 0pt }",) * 2,
         (["3pt", "2pt", "1pt"], "(3pt, 2pt, 1pt)"),
