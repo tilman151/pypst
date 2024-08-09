@@ -86,13 +86,13 @@ class Table:
         elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
             raise ValueError("All elements in the list must be strings")
         elif isinstance(value, int) and not value == (
-            len(self.row_data) + len(self.index_data)
+            len(self.row_data) + len(self.header_data)
         ):
             raise ValueError(
                 "Number of rows must match the number of table rows plus header levels"
             )
         elif isinstance(value, list) and not len(value) == (
-            len(self.row_data) + len(self.index_data)
+            len(self.row_data) + len(self.header_data)
         ):
             raise ValueError(
                 "If specifying rows as a list, "
