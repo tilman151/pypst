@@ -3,20 +3,26 @@ from typing import Any, Optional, Union, Literal
 
 import pandas as pd
 
+from frozenlist import FrozenList
+
 __all__ = ["Table", "Cell"]
 
 
 class Table:
-    header_data: list[list["Cell"]]
-    index_data: list[list["Cell"]]
-    row_data: list[list["Cell"]]
-    _columns: Optional[int | str | list[str]]
-    _rows: Optional[int | str | list[str]]
+    header_data: FrozenList[FrozenList["Cell"]]
+    index_data: FrozenList[FrozenList["Cell"]]
+    row_data: FrozenList[FrozenList["Cell"]]
+    _columns: Optional[int | str | FrozenList[str]]
+    _rows: Optional[int | str | FrozenList[str]]
 
     def __init__(self) -> None:
-        self.header_data = []
-        self.index_data = []
-        self.row_data = []
+        self.header_data = FrozenList([])
+        self.index_data = FrozenList([])
+        self.row_data = FrozenList([])
+
+        self.header_data.freeze()
+        self.index_data.freeze()
+        self.row_data.freeze()
 
         self._columns = None
         self._rows = None
@@ -26,9 +32,14 @@ class Table:
         table = cls()
         table.header_data = _parse_index(df.columns, direction="cols")
         table.index_data = _parse_index(df.index, direction="rows")
+        row_data = FrozenList([])
         for _, *row in df.itertuples():
-            table.row_data.append([Cell(value) for value in row])
-        table._columns = len(df.columns) + df.index.nlevels
+            row = FrozenList([Cell(value) for value in row])
+            row.freeze()
+            row_data.append(row)
+        row_data.freeze()
+        table.row_data = row_data
+        table.columns = len(df.columns) + df.index.nlevels
 
         return table
 
@@ -42,16 +53,25 @@ class Table:
             raise ValueError("Columns must be an integer, string, or list of strings")
         elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
             raise ValueError("All elements in the list must be strings")
-        elif isinstance(value, int) and not value == len(self.row_data[0]):
+        elif isinstance(value, int) and not value == (
+            len(self.row_data[0]) + len(self.index_data)
+        ):
             raise ValueError(
-                "Number of columns must match the number of columns in the table"
+                "Number of columns must match the number "
+                "of table columns plus index levels"
             )
-        elif isinstance(value, list) and not len(value) == len(self.row_data[0]):
+        elif isinstance(value, list) and not len(value) == (
+            len(self.row_data[0]) + len(self.index_data)
+        ):
             raise ValueError(
                 "If specifying columns as a list, "
-                "its length must match the number of columns in the table"
+                "its length must match the number of table columns plus index levels"
             )
-        self._columns = value
+        if isinstance(value, list):
+            self._columns = FrozenList(value)
+            self._columns.freeze()
+        else:
+            self._columns = value
 
     @property
     def rows(self):
@@ -65,16 +85,25 @@ class Table:
             )
         elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
             raise ValueError("All elements in the list must be strings")
-        elif isinstance(value, int) and not value == len(self.row_data):
+        elif isinstance(value, int) and not value == (
+            len(self.row_data) + len(self.index_data)
+        ):
             raise ValueError(
-                "Number of rows must match the number of rows in the table"
+                "Number of rows must match the number of table rows plus header levels"
             )
-        elif isinstance(value, list) and not len(value) == len(self.row_data):
+        elif isinstance(value, list) and not len(value) == (
+            len(self.row_data) + len(self.index_data)
+        ):
             raise ValueError(
                 "If specifying rows as a list, "
-                "its length must match the number of rows in the table"
+                "its length must match the number of table rows plus header levels"
             )
-        self._rows = value
+
+        if isinstance(value, list):
+            self._rows = FrozenList(value)
+            self._rows.freeze()
+        else:
+            self._rows = value
 
     def __str__(self) -> str:
         return self.render()
@@ -170,7 +199,7 @@ class Cell:
 
 def _parse_index(
     index: Union[pd.Index, pd.MultiIndex], direction: Literal["rows", "cols"]
-) -> list[list["Cell"]]:
+) -> FrozenList[FrozenList["Cell"]]:
     headers: list[list[Cell]]
     if index.empty:
         headers = [[]]
@@ -179,7 +208,12 @@ def _parse_index(
     else:
         headers = [[Cell(header, colspan=1) for header in index]]
 
-    return headers
+    frozen_headers = FrozenList(FrozenList(header) for header in headers)
+    for header in frozen_headers:
+        header.freeze()
+    frozen_headers.freeze()
+
+    return frozen_headers
 
 
 def _parse_multi_index(

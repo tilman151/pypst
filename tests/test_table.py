@@ -3,6 +3,7 @@ from copy import deepcopy
 import pandas as pd
 import pytest
 import typst
+from frozenlist import FrozenList
 
 from pypst import Table, Cell
 
@@ -124,6 +125,24 @@ def test_render_custom_row(df_custom_row):
         "\n[1], [2], [5], [8],"
         "\n[2], [3], [6], [9],\n)"
     )
+
+
+@pytest.mark.parametrize(
+    "table", ["df", "df_multi_index", "df_custom_col", "df_custom_row"]
+)
+def test_attributes_are_frozen(table, tmp_path, request):
+    table = request.getfixturevalue(table)
+
+    def _check_all_frozen(obj):
+        assert isinstance(obj, FrozenList)
+        assert obj.frozen
+        for element in obj:
+            assert isinstance(element, FrozenList)
+            assert element.frozen
+
+    _check_all_frozen(table.header_data)
+    _check_all_frozen(table.index_data)
+    _check_all_frozen(table.row_data)
 
 
 @pytest.mark.parametrize(
