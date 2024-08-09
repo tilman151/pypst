@@ -1,41 +1,26 @@
 import itertools
 from dataclasses import dataclass
-from typing import Any, Optional, Union, Literal, Sequence, Mapping, Iterable
+from typing import Optional, Union, Literal
 
 import pandas as pd
 from frozendict import frozendict
 
 from frozenlist import FrozenList
 
-__all__ = ["Table", "Cell"]
+from pypst.cell import Cell
+from pypst.utils import render_arg, render_mapping
 
 
+@dataclass
 class Table:
-    header_data: FrozenList[FrozenList["Cell"]]
-    index_data: FrozenList[FrozenList["Cell"]]
-    row_data: FrozenList[FrozenList["Cell"]]
-    _columns: Optional[int | str | FrozenList[str]]
-    _rows: Optional[int | str | FrozenList[str]]
-    _stroke: Optional[str | FrozenList[str] | frozendict[str, str]]
-    _align: Optional[str | FrozenList[str]]
-    _lines: list["TableLine"]
-
-    def __init__(self) -> None:
-        self.header_data = FrozenList([])
-        self.index_data = FrozenList([])
-        self.row_data = FrozenList([])
-
-        self.header_data.freeze()
-        self.index_data.freeze()
-        self.row_data.freeze()
-
-        # None will not render the argument, which results in Typst default
-        self._columns = None
-        self._rows = None
-        self._stroke = None
-        self._align = None
-
-        self._lines = []
+    header_data: FrozenList[FrozenList["Cell"]] = FrozenList(FrozenList([]))
+    index_data: FrozenList[FrozenList["Cell"]] = FrozenList(FrozenList([]))
+    row_data: FrozenList[FrozenList["Cell"]] = FrozenList(FrozenList([]))
+    _columns: Optional[int | str | FrozenList[str]] = None
+    _rows: Optional[int | str | FrozenList[str]] = None
+    _stroke: Optional[str | FrozenList[str] | frozendict[str, str]] = None
+    _align: Optional[str | FrozenList[str]] = None
+    _lines: list["TableLine"] = None
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame) -> "Table":
@@ -166,8 +151,7 @@ class Table:
         stroke: Optional[str] = None,
         position: Optional[Literal["start", "end"]] = None,
     ):
-        line = TableLine(y, "horizontal", start, end, stroke, position)
-        self._lines.append(line)
+        self._add_line(TableLine(y, "horizontal", start, end, stroke, position))
 
     def add_vline(
         self,
@@ -177,7 +161,11 @@ class Table:
         stroke: Optional[str] = None,
         position: Optional[Literal["start", "end"]] = None,
     ):
-        line = TableLine(x, "vertical", start, end, stroke, position)
+        self._add_line(TableLine(x, "vertical", start, end, stroke, position))
+
+    def _add_line(self, line: "TableLine") -> None:
+        if self._lines is None:
+            self._lines = []
         self._lines.append(line)
 
     def __str__(self) -> str:
@@ -208,16 +196,16 @@ class Table:
     def _render_args(self) -> str:
         args = []
         if self._columns is not None:
-            columns = _render_col_row_arg(self._columns)
+            columns = render_arg(self._columns)
             args.append(f"columns: {columns}")
         if self._rows is not None:
-            rows = _render_col_row_arg(self._rows)
+            rows = render_arg(self._rows)
             args.append(f"rows: {rows}")
         if self._stroke is not None:
-            stroke = _render_col_row_arg(self._stroke)
+            stroke = render_arg(self._stroke)
             args.append(f"stroke: {stroke}")
         if self._align is not None:
-            align = _render_col_row_arg(self._align)
+            align = render_arg(self._align)
             args.append(f"align: {align}")
         rendered_args = ",\n".join(args) + ",\n"
 
@@ -248,70 +236,6 @@ class Table:
         return table
 
 
-class Cell:
-    def __init__(
-        self,
-        value: Optional[Any] = None,
-        rowspan: int = 1,
-        colspan: int = 1,
-        fill: Optional[str] = None,
-        align: Optional[str] = None,
-        stroke: Optional[str | list | dict] = None,
-    ) -> None:
-        self.value = value
-        self.rowspan = rowspan
-        self.colspan = colspan
-        self.fill = fill
-        self.align = align
-        self.stroke = stroke
-
-    def __str__(self) -> str:
-        return self.render()
-
-    def __repr__(self) -> str:
-        return (
-            f"Cell(value={self.value}, rowspan={self.rowspan}, colspan={self.colspan}, "
-            f"fill={self.fill}, align={self.align}, stroke={self.stroke})"
-        )
-
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, Cell):
-            return False
-
-        return (
-            self.value == other.value
-            and self.rowspan == other.rowspan
-            and self.colspan == other.colspan
-            and self.fill == other.fill
-            and self.align == other.align
-            and self.stroke == other.stroke
-        )
-
-    def render(self) -> str:
-        args = []
-        if self.rowspan > 1:
-            args.append(f"rowspan: {self.rowspan}")
-        if self.colspan > 1:
-            args.append(f"colspan: {self.colspan}")
-        if self.fill is not None:
-            args.append(f"fill: {self.fill}")
-        if self.align is not None:
-            args.append(f"align: {self.align}")
-        if self.stroke is not None:
-            stroke = self.stroke
-            if isinstance(self.stroke, dict):
-                stroke = _render_mapping(self.stroke)
-            elif isinstance(self.stroke, list):
-                stroke = _render_sequence(self.stroke)
-            args.append(f"stroke: {stroke}")
-
-        cell = "[]" if self.value is None else f"[{self.value}]"
-        if args:
-            cell = f"[#table.cell({', '.join(args)}){cell}]"
-
-        return cell
-
-
 @dataclass
 class TableLine:
     pos: int
@@ -337,7 +261,7 @@ class TableLine:
         if self.stroke is not None:
             stroke = self.stroke
             if isinstance(self.stroke, dict):
-                stroke = _render_mapping(self.stroke)
+                stroke = render_mapping(self.stroke)
             args.append(f"stroke: {stroke}")
         if self.position is not None:
             args.append(f"position: {self.position}")
@@ -407,30 +331,3 @@ def _get_span_arg(direction: Literal["rows", "cols"]) -> str:
         raise ValueError(f"Invalid direction: {direction}")
 
     return span_arg
-
-
-def _render_col_row_arg(arg: int | str | Sequence[str] | Mapping[str, str]) -> str:
-    if isinstance(arg, int):
-        rendered_arg = str(arg)
-    elif isinstance(arg, str):
-        rendered_arg = arg
-    elif isinstance(arg, Sequence):
-        if not all(isinstance(a, str) for a in arg):
-            raise ValueError("All elements in the list must be strings")
-        rendered_arg = _render_sequence(arg)
-    elif isinstance(arg, Mapping):
-        if not all(isinstance(k, str) and isinstance(v, str) for k, v in arg.items()):
-            raise ValueError("All keys and values in the dictionary must be strings")
-        rendered_arg = _render_mapping(arg)
-    else:
-        raise ValueError(f"Invalid table argument type: {type(arg)}")
-
-    return rendered_arg
-
-
-def _render_mapping(arg: Mapping[str, str | int | float]) -> str:
-    return _render_sequence(f"{k}: {v}" for k, v in arg.items())
-
-
-def _render_sequence(arg: Iterable[Any]) -> str:
-    return f"({', '.join(a for a in arg)})"
