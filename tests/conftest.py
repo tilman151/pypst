@@ -107,3 +107,13 @@ def generate_all_combinations():
             )
 
     return ids, all_combinations
+
+
+class DummyBody:
+    def render(self):
+        return "#text(fill: red)[Hello, world!]"
+
+
+@pytest.fixture
+def dummy_body():
+    return DummyBody()
