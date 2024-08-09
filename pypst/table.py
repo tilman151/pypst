@@ -17,6 +17,7 @@ class Table:
     _columns: Optional[int | str | FrozenList[str]]
     _rows: Optional[int | str | FrozenList[str]]
     _stroke: Optional[str | FrozenList[str] | frozendict[str, str]]
+    _align: Optional[str | FrozenList[str]]
     _lines: list["TableLine"]
 
     def __init__(self) -> None:
@@ -32,6 +33,7 @@ class Table:
         self._columns = None
         self._rows = None
         self._stroke = None
+        self._align = None
 
         self._lines = []
 
@@ -140,6 +142,22 @@ class Table:
         else:
             self._stroke = value
 
+    @property
+    def align(self) -> Optional[str | FrozenList[str]]:
+        return self._align
+
+    @align.setter
+    def align(self, value: Optional[str | list[str]]) -> None:
+        if not isinstance(value, (str, list)) and value is not None:
+            raise ValueError("Stroke must be a string, list of strings, or None")
+        elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
+            raise ValueError("All elements in the list must be strings")
+        if isinstance(value, list):
+            self._align = FrozenList(value)
+            self._align.freeze()
+        else:
+            self._align = value
+
     def add_hline(
         self,
         y: int,
@@ -198,6 +216,9 @@ class Table:
         if self._stroke is not None:
             stroke = _render_col_row_arg(self._stroke)
             args.append(f"stroke: {stroke}")
+        if self._align is not None:
+            align = _render_col_row_arg(self._align)
+            args.append(f"align: {align}")
         rendered_args = ",\n".join(args) + ",\n"
 
         return rendered_args

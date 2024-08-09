@@ -79,19 +79,26 @@ def generate_all_combinations():
             ["3pt", "2pt", "1pt"],
             {"top": "1pt", "bottom": "2pt"},
         ]
+        aligns = [
+            None,
+            "center",
+            "(x, _) => if calc.odd(x) { left } else { right }",
+            ["left", "center", "right"],
+        ]
         line_options = [
             [],
             [("h", (0, 1, 3, "red"))],
             [("v", (0, 1, 3, "blue"))],
             [("h", (0, 1, 3, "red")), ("v", (0, 1, 3, "blue"))],
         ]
-        for col, row, stroke, lines in itertools.product(
-            columns, rows, strokes, line_options
+        for col, row, stroke, align, lines in itertools.product(
+            columns, rows, strokes, aligns, line_options
         ):
             table = Table.from_dataframe(df)
             table.columns = col
             table.rows = row
             table.stroke = stroke
+            table.align = align
             for orientation, args in lines:
                 if orientation == "h":
                     table.add_hline(*args)
@@ -99,7 +106,8 @@ def generate_all_combinations():
                     table.add_vline(*args)
             all_combinations.append(table)
             ids.append(
-                f"type: {df_name}, columns: {col}, rows: {row}, stroke: {stroke}"
+                f"type: {df_name}, columns: {col}, rows: {row}, "
+                f"stroke: {stroke}, align: {align}, lines: {len(lines)}"
             )
 
     return ids, all_combinations
@@ -184,6 +192,24 @@ def test_render_custom_stroke(df, stroke, rendered_stroke):
     df.stroke = stroke
     assert df.render() == (
         f"#table(\ncolumns: 4,\nstroke: {rendered_stroke},\ntable.header[][A][B][C],"
+        "\n[0], [1], [4], [7],"
+        "\n[1], [2], [5], [8],"
+        "\n[2], [3], [6], [9],\n)"
+    )
+
+
+@pytest.mark.parametrize(
+    "align, rendered_align",
+    [
+        ("center",) * 2,
+        ("(x, _) => if x > 1 { left } else { right }",) * 2,
+        (["left", "center", "right"], "(left, center, right)"),
+    ],
+)
+def test_render_custom_align(df, align, rendered_align):
+    df.align = align
+    assert df.render() == (
+        f"#table(\ncolumns: 4,\nalign: {rendered_align},\ntable.header[][A][B][C],"
         "\n[0], [1], [4], [7],"
         "\n[1], [2], [5], [8],"
         "\n[2], [3], [6], [9],\n)"
