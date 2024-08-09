@@ -6,7 +6,7 @@ authors = ["Tilman Krokotsch <t.krokotsch@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 pandas = "^2.2.2"
 frozenlist = "^1.4.1"
 frozendict = "^2.4.4"
