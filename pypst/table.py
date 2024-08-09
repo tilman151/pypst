@@ -1,7 +1,9 @@
 import itertools
-from typing import Any, Optional, Union, Literal
+from dataclasses import dataclass
+from typing import Any, Optional, Union, Literal, Sequence, Mapping, Iterable
 
 import pandas as pd
+from frozendict import frozendict
 
 from frozenlist import FrozenList
 
@@ -14,6 +16,8 @@ class Table:
     row_data: FrozenList[FrozenList["Cell"]]
     _columns: Optional[int | str | FrozenList[str]]
     _rows: Optional[int | str | FrozenList[str]]
+    _stroke: Optional[str | FrozenList[str] | frozendict[str, str]]
+    _lines: list["TableLine"]
 
     def __init__(self) -> None:
         self.header_data = FrozenList([])
@@ -24,8 +28,12 @@ class Table:
         self.index_data.freeze()
         self.row_data.freeze()
 
+        # None will not render the argument, which results in Typst default
         self._columns = None
         self._rows = None
+        self._stroke = None
+
+        self._lines = []
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame) -> "Table":
@@ -105,6 +113,55 @@ class Table:
         else:
             self._rows = value
 
+    @property
+    def stroke(self) -> Optional[str | FrozenList[str] | frozendict[str, str]]:
+        return self._stroke
+
+    @stroke.setter
+    def stroke(self, value: Optional[str | FrozenList[str] | dict[str, str]]) -> None:
+        if not isinstance(value, (str, list, dict)) and value is not None:
+            raise ValueError(
+                "Stroke must be a string, list of strings, dictionary, or None"
+            )
+        elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
+            raise ValueError("All elements in the list must be strings")
+        elif isinstance(value, dict) and not all(
+            isinstance(k, str) and isinstance(v, str) for k, v in value.items()
+        ):
+            raise ValueError("All keys and values in the dictionary must be strings")
+
+        if isinstance(value, list):
+            self._stroke = FrozenList(value)
+            self._stroke.freeze()
+        elif isinstance(value, dict):
+            self._stroke = frozendict(value)
+        elif value is None:
+            self._stroke = "none"  # disables stroke in Typst
+        else:
+            self._stroke = value
+
+    def add_hline(
+        self,
+        y: int,
+        start: Optional[int] = None,
+        end: Optional[int] = None,
+        stroke: Optional[str] = None,
+        position: Optional[Literal["start", "end"]] = None,
+    ):
+        line = TableLine(y, "horizontal", start, end, stroke, position)
+        self._lines.append(line)
+
+    def add_vline(
+        self,
+        x: int,
+        start: Optional[int] = None,
+        end: Optional[int] = None,
+        stroke: Optional[str] = None,
+        position: Optional[Literal["start", "end"]] = None,
+    ):
+        line = TableLine(x, "vertical", start, end, stroke, position)
+        self._lines.append(line)
+
     def __str__(self) -> str:
         return self.render()
 
@@ -119,6 +176,7 @@ class Table:
         table = (
             "#table(\n"
             + self._render_args()
+            + self._render_lines()
             + "table.header"
             + index_placeholder.render()
             + "".join(header.render() for header in headers)
@@ -137,9 +195,20 @@ class Table:
         if self._rows is not None:
             rows = _render_col_row_arg(self._rows)
             args.append(f"rows: {rows}")
+        if self._stroke is not None:
+            stroke = _render_col_row_arg(self._stroke)
+            args.append(f"stroke: {stroke}")
         rendered_args = ",\n".join(args) + ",\n"
 
         return rendered_args
+
+    def _render_lines(self) -> str:
+        if not self._lines:
+            rendered_lines = ""
+        else:
+            rendered_lines = ",\n".join(line.render() for line in self._lines) + ",\n"
+
+        return rendered_lines
 
     def _render_rows(self) -> str:
         table = ""
@@ -195,6 +264,40 @@ class Cell:
             cell = f"[#table.cell({', '.join(args)}){cell}]"
 
         return cell
+
+
+@dataclass
+class TableLine:
+    pos: int
+    orientation: Literal["horizontal", "vertical"]
+    start: Optional[int] = None
+    end: Optional[int] = None
+    stroke: Optional[str | dict[str, str]] = None
+    position: Optional[Literal["start", "end"]] = None
+
+    def render(self) -> str:
+        args = []
+        if self.orientation == "horizontal":
+            line = "table.hline({0})"
+            args.append(f"y: {self.pos}")
+        else:
+            line = "table.vline({0})"
+            args.append(f"x: {self.pos}")
+
+        if self.start is not None:
+            args.append(f"start: {self.start}")
+        if self.end is not None:
+            args.append(f"end: {self.end}")
+        if self.stroke is not None:
+            stroke = self.stroke
+            if isinstance(self.stroke, dict):
+                stroke = _render_mapping(self.stroke)
+            args.append(f"stroke: {stroke}")
+        if self.position is not None:
+            args.append(f"position: {self.position}")
+        line = line.format(", ".join(args))
+
+        return line
 
 
 def _parse_index(
@@ -260,16 +363,28 @@ def _get_span_arg(direction: Literal["rows", "cols"]) -> str:
     return span_arg
 
 
-def _render_col_row_arg(arg: int | str | list[str]) -> str:
+def _render_col_row_arg(arg: int | str | Sequence[str] | Mapping[str, str]) -> str:
     if isinstance(arg, int):
         rendered_arg = str(arg)
     elif isinstance(arg, str):
         rendered_arg = arg
-    elif isinstance(arg, list):
+    elif isinstance(arg, Sequence):
         if not all(isinstance(a, str) for a in arg):
             raise ValueError("All elements in the list must be strings")
-        rendered_arg = f"({', '.join(a for a in arg)})"
+        rendered_arg = _render_sequence(arg)
+    elif isinstance(arg, Mapping):
+        if not all(isinstance(k, str) and isinstance(v, str) for k, v in arg.items()):
+            raise ValueError("All keys and values in the dictionary must be strings")
+        rendered_arg = _render_mapping(arg)
     else:
         raise ValueError(f"Invalid table argument type: {type(arg)}")
 
     return rendered_arg
+
+
+def _render_mapping(arg: Mapping[str, str | int | float]) -> str:
+    return _render_sequence(f"{k}: {v}" for k, v in arg.items())
+
+
+def _render_sequence(arg: Iterable[Any]) -> str:
+    return f"({', '.join(a for a in arg)})"
