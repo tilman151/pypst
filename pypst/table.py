@@ -10,16 +10,16 @@ class Table:
     header_data: list[list["Cell"]]
     index_data: list[list["Cell"]]
     row_data: list[list["Cell"]]
-    columns: Optional[int | str | list[str]]
-    rows: Optional[int | str | list[str]]
+    _columns: Optional[int | str | list[str]]
+    _rows: Optional[int | str | list[str]]
 
     def __init__(self) -> None:
         self.header_data = []
         self.index_data = []
         self.row_data = []
 
-        self.columns = None
-        self.rows = None
+        self._columns = None
+        self._rows = None
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame) -> "Table":
@@ -28,9 +28,53 @@ class Table:
         table.index_data = _parse_index(df.index, direction="rows")
         for _, *row in df.itertuples():
             table.row_data.append([Cell(value) for value in row])
-        table.columns = len(df.columns) + df.index.nlevels
+        table._columns = len(df.columns) + df.index.nlevels
 
         return table
+
+    @property
+    def columns(self):
+        return self._columns
+
+    @columns.setter
+    def columns(self, value):
+        if not isinstance(value, (int, str, list)):
+            raise ValueError("Columns must be an integer, string, or list of strings")
+        elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
+            raise ValueError("All elements in the list must be strings")
+        elif isinstance(value, int) and not value == len(self.row_data[0]):
+            raise ValueError(
+                "Number of columns must match the number of columns in the table"
+            )
+        elif isinstance(value, list) and not len(value) == len(self.row_data[0]):
+            raise ValueError(
+                "If specifying columns as a list, "
+                "its length must match the number of columns in the table"
+            )
+        self._columns = value
+
+    @property
+    def rows(self):
+        return self._rows
+
+    @rows.setter
+    def rows(self, value):
+        if not isinstance(value, (int, str, list)) and value is not None:
+            raise ValueError(
+                "Rows must be an integer, string, list of strings, or None"
+            )
+        elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
+            raise ValueError("All elements in the list must be strings")
+        elif isinstance(value, int) and not value == len(self.row_data):
+            raise ValueError(
+                "Number of rows must match the number of rows in the table"
+            )
+        elif isinstance(value, list) and not len(value) == len(self.row_data):
+            raise ValueError(
+                "If specifying rows as a list, "
+                "its length must match the number of rows in the table"
+            )
+        self._rows = value
 
     def __str__(self) -> str:
         return self.render()
@@ -58,11 +102,11 @@ class Table:
 
     def _render_args(self) -> str:
         args = []
-        if self.columns is not None:
-            columns = _render_col_row_arg(self.columns)
+        if self._columns is not None:
+            columns = _render_col_row_arg(self._columns)
             args.append(f"columns: {columns}")
-        if self.rows is not None:
-            rows = _render_col_row_arg(self.rows)
+        if self._rows is not None:
+            rows = _render_col_row_arg(self._rows)
             args.append(f"rows: {rows}")
         rendered_args = ",\n".join(args) + ",\n"
 

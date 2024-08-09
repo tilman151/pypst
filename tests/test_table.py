@@ -50,7 +50,7 @@ def df_multi_index(multi_frame):
 @pytest.fixture
 def df_custom_col(df):
     table = deepcopy(df)
-    table.columns = ["10%", "20%", "30%", "40%"]
+    table._columns = ["10%", "20%", "30%", "40%"]
 
     return table
 
@@ -58,7 +58,7 @@ def df_custom_col(df):
 @pytest.fixture
 def df_custom_row(df):
     table = deepcopy(df)
-    table.rows = ["10%", "20%", "30%", "40%"]
+    table._rows = ["10%", "20%", "30%", "40%"]
 
     return table
 
