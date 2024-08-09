@@ -253,6 +253,7 @@ def test_attributes_are_frozen(table, tmp_path, request):
     _check_all_frozen(table.row_data)
 
 
+@pytest.mark.integration
 def test_compilation(all_combinations, tmp_path):
     with open(tmp_path / "table.typ", mode="wt") as f:
         f.write(all_combinations.render())
@@ -260,7 +261,7 @@ def test_compilation(all_combinations, tmp_path):
     typst.compile(tmp_path / "table.typ")
 
 
-@pytest.mark.skip("Visual test")
+@pytest.mark.visual
 def test_compilation_visual():
     _, all_combinations = generate_all_combinations()
     table = "\n#pagebreak()\n".join([t.render() for t in all_combinations])
@@ -290,6 +291,18 @@ class TestCell:
     def test_cell_with_rowspan_and_colspan(self):
         cell = Cell("value", rowspan=3, colspan=2)
         assert cell.render() == "[#table.cell(rowspan: 3, colspan: 2)[value]]"
+
+    def test_cell_with_fill(self):
+        cell = Cell("value", fill="red")
+        assert cell.render() == "[#table.cell(fill: red)[value]]"
+
+    @pytest.mark.parametrize(
+        "stroke, rendered_stroke",
+        [("3pt",) * 2, ({"top": "1pt", "bottom": "2pt"}, "(top: 1pt, bottom: 2pt)")],
+    )
+    def test_cell_with_stroke(self, stroke, rendered_stroke):
+        cell = Cell("value", stroke=stroke)
+        assert cell.render() == f"[#table.cell(stroke: {rendered_stroke})[value]]"
 
 
 @pytest.mark.parametrize(
