@@ -6,17 +6,20 @@ from pypst.renderable import Renderable
 
 
 class Document:
-    _body: Renderable | str | list[Renderable | str]
+    _body: list[Renderable | str]
     imports: list["Import"]
 
-    def __init__(self, body: Renderable | str | list[Renderable]) -> None:
+    def __init__(self, body: Renderable | str | list[Renderable | str]) -> None:
         self._body = []
         self.imports = []
 
-        self.add(body)
+        if not isinstance(body, list):
+            body = [body]
+        for b in body:
+            self.add(b)
 
     @property
-    def body(self):
+    def body(self) -> list[Renderable | str]:
         return self._body
 
     def add(self, body: Renderable | str) -> None:
