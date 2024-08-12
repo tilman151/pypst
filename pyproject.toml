@@ -1,9 +1,21 @@
 [tool.poetry]
 name = "pypst"
 version = "0.0.0"
-description = ""
-authors = ["Tilman Krokotsch <t.krokotsch@gmail.com>"]
+description = "Declarative Typst in Python with Pandas data frame support."
+authors = ["Tilman Krokotsch <tilman@krokotsch.eu>"]
 readme = "README.md"
+repository = "https://github.com/tilman151/pypst"
+classifiers = [
+    "Topic :: Scientific/Engineering",
+    "Topic :: Text Processing :: Markup",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Typing :: Typed",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha"
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
