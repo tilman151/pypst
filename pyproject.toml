@@ -36,7 +36,7 @@ unit = "pytest -m 'not integration and not visual'"
 integration = "pytest -m integration"
 visual = "pytest -m visual"
 lint = "ruff check pypst tests"
-lint-types = "mypy pypst"
+lint-types = "mypy"
 lint-commits = "cz check --rev-range HEAD"
 format = "ruff format pypst tests"
 bump = "cz bump --changelog"
@@ -51,3 +51,11 @@ major_version_zero = true
 version_files = [
     "pypst/__init__.py"
 ]
+
+[tool.mypy]
+packages = ["pypst"]
+python_version = "3.10"
+disallow_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
