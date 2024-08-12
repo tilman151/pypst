@@ -10,6 +10,8 @@ Columns and indexes with multiple levels are supported.
 
 Pypst produces human-readable Typst code that you can modify and extend.
 
+![Example script and output](examples/example.png)
+
 ## Installation
 
 Pypst is available on PyPI and can be installed via pip.
