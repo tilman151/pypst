@@ -23,3 +23,5 @@ runs:
     - if: ${{ inputs.optional-groups != '' }}
       run: poetry install --with ${{ inputs.optional-groups }}
       shell: "bash"
+    - run: pipx install poethepoet
+      shell: "bash"
