@@ -20,18 +20,18 @@ class Table:
     _rows: Optional[int | str | FrozenList[str]] = None
     _stroke: Optional[str | FrozenList[str] | frozendict[str, str]] = None
     _align: Optional[str | FrozenList[str]] = None
-    _lines: list["TableLine"] = None
+    _lines: Optional[list["TableLine"]] = None
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame) -> "Table":
         table = cls()
         table.header_data = _parse_index(df.columns, direction="cols")
         table.index_data = _parse_index(df.index, direction="rows")
-        row_data = FrozenList([])
+        row_data: FrozenList[FrozenList[Cell]] = FrozenList([])
         for _, *row in df.itertuples():
-            row = FrozenList([Cell(value) for value in row])
-            row.freeze()
-            row_data.append(row)
+            row_cells = FrozenList([Cell(value) for value in row])
+            row_cells.freeze()
+            row_data.append(row_cells)
         row_data.freeze()
         table.row_data = row_data
         table.columns = len(df.columns) + df.index.nlevels
@@ -39,11 +39,11 @@ class Table:
         return table
 
     @property
-    def columns(self):
+    def columns(self) -> Optional[int | str | FrozenList[str]]:
         return self._columns
 
     @columns.setter
-    def columns(self, value):
+    def columns(self, value: int | str | list[str]) -> None:
         if not isinstance(value, (int, str, list)):
             raise ValueError("Columns must be an integer, string, or list of strings")
         elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
@@ -69,11 +69,11 @@ class Table:
             self._columns = value
 
     @property
-    def rows(self):
+    def rows(self) -> Optional[int | str | FrozenList[str]]:
         return self._rows
 
     @rows.setter
-    def rows(self, value):
+    def rows(self, value: int | str | list[str]) -> None:
         if not isinstance(value, (int, str, list)) and value is not None:
             raise ValueError(
                 "Rows must be an integer, string, list of strings, or None"
@@ -148,7 +148,7 @@ class Table:
         end: Optional[int] = None,
         stroke: Optional[str] = None,
         position: Optional[Literal["start", "end"]] = None,
-    ):
+    ) -> None:
         self._add_line(TableLine(y, "horizontal", start, end, stroke, position))
 
     def add_vline(
@@ -158,7 +158,7 @@ class Table:
         end: Optional[int] = None,
         stroke: Optional[str] = None,
         position: Optional[Literal["start", "end"]] = None,
-    ):
+    ) -> None:
         self._add_line(TableLine(x, "vertical", start, end, stroke, position))
 
     def _add_line(self, line: "TableLine") -> None:

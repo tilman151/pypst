@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Optional
 
 
 @dataclass
@@ -8,12 +8,12 @@ class Document:
 
     imports: list["Import"] = field(default_factory=list)
 
-    def add_import(self, module: str, members: list[str] = None):
-        self.imports.append(Import(module, members))
+    def add_import(self, module: str, members: Optional[list[str]] = None) -> None:
+        self.imports.append(Import(module, members or []))
 
     def render(self) -> str:
         imports = "\n".join([i.render() for i in self.imports])
-        body = self.body.render()
+        body: str = self.body.render()
 
         if imports:
             return f"{imports}\n\n{body}"
