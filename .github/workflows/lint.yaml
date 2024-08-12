@@ -1,0 +1,31 @@
+name: Lint
+on:
+  workflow_call:
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/install-poetry
+        with:
+          poetry-version: "1.7.1"
+      - run: poe lint
+
+  commitizen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/install-poetry
+        with:
+          poetry-version: "1.7.1"
+      - run: poe lint-commits
+
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/install-poetry
+        with:
+          poetry-version: "1.7.1"
+      - run: poe lint-types

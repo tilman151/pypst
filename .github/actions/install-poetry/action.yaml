@@ -1,0 +1,25 @@
+name: Install Poetry
+description: "Installs the requested version of poetry."
+inputs:
+  poetry-version:
+    description: "version of poetry to install"
+    required: true
+  optional-groups:
+    description: "additional dependency groups to install using '--with'"
+    required: false
+    default: ""
+runs:
+  using: "composite"
+  steps:
+    - run: pipx install poetry==${{ inputs.poetry-version }}
+      shell: "bash"
+    - uses: actions/setup-python@v4
+      with:
+        python-version-file: ".python-version"
+        cache: "poetry"
+    - if: ${{ inputs.optional-groups == '' }}
+      run: poetry install
+      shell: "bash"
+    - if: ${{ inputs.optional-groups != '' }}
+      run: poetry install --with ${{ inputs.optional-groups }}
+      shell: "bash"

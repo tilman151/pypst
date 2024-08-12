@@ -1,0 +1,23 @@
+name: Test
+on:
+  workflow_call:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/install-poetry
+        with:
+          poetry-version: "1.7.1"
+      - run: poe unit
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: [ legacy-unit ]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/install-poetry
+        with:
+          poetry-version: "1.7.1"
+      - run: poe integration

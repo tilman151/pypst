@@ -1,0 +1,54 @@
+name: Release
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  lint:
+    uses: ./.github/workflows/lint.yaml
+
+  test:
+    needs: [ lint ]
+    uses: ./.github/workflows/test.yaml
+
+  deploy-test:
+    needs: [ test ]
+    runs-on: ubuntu-latest
+    environment:
+      name: TestPyPI
+      url: https://test.pypi.org/project/rul-adapt/
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/install-poetry
+        with:
+          poetry-version: "1.7.1"
+      - run: poetry config repositories.testpypi https://test.pypi.org/legacy/
+      - run: poetry config pypi-token.testpypi ${{ secrets.PYPI_TOKEN }}
+      - run: poetry build
+      - run: poetry publish -r testpypi
+
+  deploy-prod:
+    needs: [ deploy-test ]
+    runs-on: ubuntu-latest
+    environment:
+      name: PyPI
+      url: https://pypi.org/project/rul-adapt/
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/install-poetry
+        with:
+          poetry-version: "1.7.1"
+      - run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
+      - run: poetry build
+      - run: poetry publish
+
+#  deploy-docs:
+#    runs-on: ubuntu-latest
+#    needs: [ deploy-prod ]
+#    steps:
+#      - uses: actions/checkout@v3
+#      - uses: ./.github/actions/install-poetry
+#        with:
+#          poetry-version: "1.7.1"
+#          optional-groups: "docs"
+#      - run: poetry run mkdocs gh-deploy --force
