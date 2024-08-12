@@ -5,23 +5,36 @@ from pypst import utils
 from pypst.renderable import Renderable
 
 
-@dataclass
 class Document:
-    body: Renderable | str
-    imports: list["Import"] = field(default_factory=list)
+    _body: Renderable | str | list[Renderable | str]
+    imports: list["Import"]
 
-    def __post_init__(self) -> None:
-        if not isinstance(self.body, (Renderable, str)):
-            raise ValueError(f"Invalid body type: {type(self.body)}")
-        elif isinstance(self.body, Document):
-            raise ValueError("Document cannot be set as body of another document")
+    def __init__(self, body: Renderable | str | list[Renderable]) -> None:
+        self._body = []
+        self.imports = []
+
+        self.add(body)
+
+    @property
+    def body(self):
+        return self._body
+
+    def add(self, body: Renderable | str) -> None:
+        if not isinstance(body, (Renderable, str)):
+            raise ValueError(f"Invalid body type: {type(body)}")
+        elif isinstance(body, Document):
+            raise ValueError("Document cannot be set as value of another document")
+        elif isinstance(body, Import):
+            self.imports.append(body)
+        else:
+            self._body.append(body)
 
     def add_import(self, module: str, members: Optional[list[str]] = None) -> None:
         self.imports.append(Import(module, members or []))
 
     def render(self) -> str:
         imports = "\n".join([i.render() for i in self.imports])
-        body: str = utils.render(self.body)
+        body = "\n".join(utils.render(b) for b in self.body)
 
         if imports:
             return f"{imports}\n\n{body}"

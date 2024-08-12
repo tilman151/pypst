@@ -10,6 +10,17 @@ def test_document(dummy_body):
     assert document.render() == "#text(fill: red)[Hello, world!]"
 
 
+def test_document_with_multiple_body_elements(dummy_body):
+    document = Document(dummy_body)
+    document.add("This is another text")
+    document.add(dummy_body)
+    assert document.render() == (
+        "#text(fill: red)[Hello, world!]\n"
+        "This is another text\n"
+        "#text(fill: red)[Hello, world!]"
+    )
+
+
 def test_document_with_imports(dummy_body):
     document = Document(dummy_body)
     document.add_import("@preview/cetz:0.2.2")
