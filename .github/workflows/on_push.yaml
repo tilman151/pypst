@@ -2,12 +2,12 @@ name: Master
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   lint:
     uses: ./.github/workflows/lint.yaml
 
   test:
-    needs: [lint]
+    needs: [ lint ]
     uses: ./.github/workflows/test.yaml
