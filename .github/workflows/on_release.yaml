@@ -17,7 +17,7 @@ jobs:
       name: TestPyPI
       url: https://test.pypi.org/project/rul-adapt/
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/install-poetry
         with:
           poetry-version: "1.7.1"
@@ -33,7 +33,7 @@ jobs:
       name: PyPI
       url: https://pypi.org/project/rul-adapt/
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/install-poetry
         with:
           poetry-version: "1.7.1"
@@ -45,7 +45,7 @@ jobs:
 #    runs-on: ubuntu-latest
 #    needs: [ deploy-prod ]
 #    steps:
-#      - uses: actions/checkout@v3
+#      - uses: actions/checkout@v4
 #      - uses: ./.github/actions/install-poetry
 #        with:
 #          poetry-version: "1.7.1"

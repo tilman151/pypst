@@ -6,7 +6,7 @@ jobs:
   unit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/install-poetry
         with:
           poetry-version: "1.7.1"
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ unit ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/install-poetry
         with:
           poetry-version: "1.7.1"
