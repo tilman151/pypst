@@ -87,14 +87,38 @@ def generate_all_combinations():
             "(x, _) => if calc.odd(x) { green } else { yellow }",
             ["red", "blue", "green"],
         ]
+        gutters = [
+            None,
+            1,
+            "1%",
+            ["1%", "2%", "3%"],
+        ]
         line_options = [
             [],
             [("h", (0, 1, 3, "red"))],
             [("v", (0, 1, 3, "blue"))],
             [("h", (0, 1, 3, "red")), ("v", (0, 1, 3, "blue"))],
         ]
-        for col, row, stroke, align, fill, lines in itertools.product(
-            columns, rows, strokes, aligns, fills, line_options
+        for (
+            col,
+            row,
+            stroke,
+            align,
+            fill,
+            gutter,
+            column_gutter,
+            row_gutter,
+            lines,
+        ) in itertools.product(
+            columns,
+            rows,
+            strokes,
+            aligns,
+            fills,
+            gutters,
+            gutters,
+            gutters,
+            line_options,
         ):
             table = Table.from_dataframe(df)
             table.columns = col
@@ -102,6 +126,9 @@ def generate_all_combinations():
             table.stroke = stroke
             table.align = align
             table.fill = fill
+            table.gutter = gutter
+            table.column_gutter = column_gutter
+            table.row_gutter = row_gutter
             for orientation, args in lines:
                 if orientation == "h":
                     table.add_hline(*args)
@@ -110,7 +137,9 @@ def generate_all_combinations():
             all_combinations.append(table)
             ids.append(
                 f"type: {df_name}, columns: {col}, rows: {row}, "
-                f"stroke: {stroke}, align: {align}, fill: {fill}, lines: {len(lines)}"
+                f"stroke: {stroke}, align: {align}, fill: {fill}, gutter: {gutter}, "
+                f"column-gutter: {column_gutter}, row-gutter: {row_gutter}, "
+                f"lines: {len(lines)}"
             )
 
     return ids, all_combinations

@@ -136,6 +136,27 @@ def test_render_custom_fill(df, fill, rendered_fill):
     )
 
 
+@pytest.mark.parametrize("gutter_attribute", ["gutter", "column_gutter", "row_gutter"])
+@pytest.mark.parametrize(
+    "gutter, rendered_gutter",
+    [
+        (1,) * 2,
+        ("5%",) * 2,
+        (["1%", "2%", "3%"], "(1%, 2%, 3%)"),
+    ],
+)
+def test_render_custom_gutter(df, gutter_attribute, gutter, rendered_gutter):
+    setattr(df, gutter_attribute, gutter)
+    rendered = df.render().replace("\n  ", "\n")
+    assert rendered == (
+        f"#table(\ncolumns: 4,\n{gutter_attribute.replace('_', '-')}: {rendered_gutter},"
+        f"\ntable.header[][A][B][C],"
+        "\n[0], [1], [4], [7],"
+        "\n[1], [2], [5], [8],"
+        "\n[2], [3], [6], [9]\n)"
+    )
+
+
 @pytest.mark.parametrize(
     "lines, rendered_lines",
     [
