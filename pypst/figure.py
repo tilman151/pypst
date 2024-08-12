@@ -1,10 +1,14 @@
 from dataclasses import dataclass
-from typing import Optional, Any
+from typing import Optional
+
+from pypst import utils
+from pypst.document import Document
+from pypst.renderable import Renderable
 
 
 @dataclass
 class Figure:
-    body: Any
+    body: Renderable | str
 
     placement: Optional[str] = None
     caption: Optional[str] = None
@@ -14,9 +18,17 @@ class Figure:
     gap: Optional[str] = None
     outlined: Optional[bool] = None
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.body, (Renderable, str)):
+            raise ValueError(f"Invalid body type: {type(self.body)}")
+        elif isinstance(self.body, Document):
+            raise ValueError(
+                "Document cannot be set as body, because it needs to be top-level"
+            )
+
     def render(self) -> str:
         # remove the leading '#' because we're in code mode
-        args = [self.body.render().lstrip("#")]
+        args = [utils.render(self.body).lstrip("#")]
         if self.placement is not None:
             args.append(f"placement: {self.placement}")
         if self.caption is not None:

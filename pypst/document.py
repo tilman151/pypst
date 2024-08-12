@@ -1,19 +1,27 @@
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Optional
+
+from pypst import utils
+from pypst.renderable import Renderable
 
 
 @dataclass
 class Document:
-    body: Any
-
+    body: Renderable | str
     imports: list["Import"] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.body, (Renderable, str)):
+            raise ValueError(f"Invalid body type: {type(self.body)}")
+        elif isinstance(self.body, Document):
+            raise ValueError("Document cannot be set as body of another document")
 
     def add_import(self, module: str, members: Optional[list[str]] = None) -> None:
         self.imports.append(Import(module, members or []))
 
     def render(self) -> str:
         imports = "\n".join([i.render() for i in self.imports])
-        body: str = self.body.render()
+        body: str = utils.render(self.body)
 
         if imports:
             return f"{imports}\n\n{body}"
