@@ -8,11 +8,10 @@ jobs:
     uses: ./.github/workflows/lint.yaml
 
   test:
-    needs: [ lint ]
     uses: ./.github/workflows/test.yaml
 
   deploy-test:
-    needs: [ test ]
+    needs: [ lint, test ]
     runs-on: ubuntu-latest
     environment:
       name: TestPyPI
