@@ -1,7 +1,18 @@
 from typing import Sequence, Mapping, Iterable, Any
 
+from pypst.renderable import Renderable
 
-def render_arg(arg: int | str | Sequence[str] | Mapping[str, str]) -> str:
+
+def render(obj: Renderable | int | str | Sequence[str] | Mapping[str, str]) -> str:
+    if isinstance(obj, Renderable):
+        rendered = obj.render()
+    else:
+        rendered = render_type(obj)
+
+    return rendered
+
+
+def render_type(arg: int | str | Sequence[str] | Mapping[str, str]) -> str:
     if isinstance(arg, int | float):
         rendered_arg = str(arg)
     elif isinstance(arg, str):

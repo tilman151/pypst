@@ -8,7 +8,7 @@ from frozendict import frozendict
 from frozenlist import FrozenList
 
 from pypst.cell import Cell
-from pypst.utils import render_arg, render_mapping
+from pypst.utils import render_type, render_mapping
 
 
 @dataclass
@@ -266,28 +266,28 @@ class Table:
     def _render_args(self) -> str:
         args = []
         if self._columns is not None:
-            columns = render_arg(self._columns)
+            columns = render_type(self._columns)
             args.append(f"columns: {columns}")
         if self._rows is not None:
-            rows = render_arg(self._rows)
+            rows = render_type(self._rows)
             args.append(f"rows: {rows}")
         if self._stroke is not None:
-            stroke = render_arg(self._stroke)
+            stroke = render_type(self._stroke)
             args.append(f"stroke: {stroke}")
         if self._align is not None:
-            align = render_arg(self._align)
+            align = render_type(self._align)
             args.append(f"align: {align}")
         if self._fill is not None:
-            fill = render_arg(self._fill)
+            fill = render_type(self._fill)
             args.append(f"fill: {fill}")
         if self._gutter is not None:
-            gutter = render_arg(self._gutter)
+            gutter = render_type(self._gutter)
             args.append(f"gutter: {gutter}")
         if self._column_gutter is not None:
-            column_gutter = render_arg(self._column_gutter)
+            column_gutter = render_type(self._column_gutter)
             args.append(f"column-gutter: {column_gutter}")
         if self._row_gutter is not None:
-            row_gutter = render_arg(self._row_gutter)
+            row_gutter = render_type(self._row_gutter)
             args.append(f"row-gutter: {row_gutter}")
         rendered_args = ",\n".join(args) + ",\n"
 
