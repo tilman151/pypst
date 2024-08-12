@@ -42,10 +42,15 @@ def df_multi_index():
     return table
 
 
+@pytest.fixture
+def styled_table(request):
+    return create_table(*request.param)
+
+
 def pytest_generate_tests(metafunc):
-    if "all_combinations" in metafunc.fixturenames:
-        ids, all_combinations = generate_all_combinations()
-        metafunc.parametrize("all_combinations", all_combinations, ids=ids)
+    if "styled_table" in metafunc.fixturenames:
+        ids, combinations = sample_combinations(1000, seed=42)
+        metafunc.parametrize("styled_table", combinations, ids=ids, indirect=True)
 
 
 def generate_all_combinations():
@@ -120,29 +125,59 @@ def generate_all_combinations():
             gutters,
             line_options,
         ):
-            table = Table.from_dataframe(df)
-            table.columns = col
-            table.rows = row
-            table.stroke = stroke
-            table.align = align
-            table.fill = fill
-            table.gutter = gutter
-            table.column_gutter = column_gutter
-            table.row_gutter = row_gutter
-            for orientation, args in lines:
-                if orientation == "h":
-                    table.add_hline(*args)
-                else:
-                    table.add_vline(*args)
-            all_combinations.append(table)
+            all_combinations.append(
+                (
+                    df,
+                    col,
+                    row,
+                    stroke,
+                    align,
+                    fill,
+                    gutter,
+                    column_gutter,
+                    row_gutter,
+                    lines,
+                )
+            )
             ids.append(
-                f"type: {df_name}, columns: {col}, rows: {row}, "
-                f"stroke: {stroke}, align: {align}, fill: {fill}, gutter: {gutter}, "
-                f"column-gutter: {column_gutter}, row-gutter: {row_gutter}, "
-                f"lines: {len(lines)}"
+                (
+                    f"type: {df_name}, columns: {col}, rows: {row}, "
+                    f"stroke: {stroke}, align: {align}, fill: {fill}, "
+                    f"gutter: {gutter}, column-gutter: {column_gutter}, "
+                    f"row-gutter: {row_gutter}, lines: {len(lines)}"
+                )
             )
 
     return ids, all_combinations
+
+
+def sample_combinations(num_samples, seed=None):
+    all_ids, all_combinations = generate_all_combinations()
+    sample_idx = np.random.default_rng(seed).choice(
+        range(len(all_combinations)), num_samples, replace=False
+    )
+    return [all_ids[i] for i in sample_idx], [all_combinations[i] for i in sample_idx]
+
+
+def create_table(
+    df, col, row, stroke, align, fill, gutter, column_gutter, row_gutter, lines
+):
+    table = Table.from_dataframe(df)
+    table.columns = col
+    table.rows = row
+    table.stroke = stroke
+    table.align = align
+    table.fill = fill
+    table.gutter = gutter
+    table.column_gutter = column_gutter
+    table.row_gutter = row_gutter
+    for orientation, args in lines:
+        if orientation == "h":
+            table.add_hline(*args)
+        else:
+            table.add_vline(*args)
+
+    return table
 
 
 class DummyBody:

@@ -4,7 +4,7 @@ from frozenlist import FrozenList
 
 from pypst import Cell
 from pypst.table import TableLine
-from tests.conftest import generate_all_combinations
+from tests.conftest import generate_all_combinations, create_table
 
 
 def test_from_dataframe_simple_headers(df):
@@ -196,9 +196,9 @@ def test_attributes_are_frozen(table, tmp_path, request):
 
 
 @pytest.mark.integration
-def test_compilation(all_combinations, tmp_path):
+def test_compilation(styled_table, tmp_path):
     with open(tmp_path / "table.typ", mode="wt") as f:
-        f.write(all_combinations.render())
+        f.write(styled_table.render())
 
     typst.compile(tmp_path / "table.typ")
 
@@ -206,7 +206,9 @@ def test_compilation(all_combinations, tmp_path):
 @pytest.mark.visual
 def test_compilation_visual():
     _, all_combinations = generate_all_combinations()
-    table = "\n#pagebreak()\n".join([t.render() for t in all_combinations])
+    table = "\n#pagebreak()\n".join(
+        [create_table(*args).render() for args in all_combinations]
+    )
     with open("table.typ", mode="wt") as f:
         f.write(table)
 
