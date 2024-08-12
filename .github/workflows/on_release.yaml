@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: TestPyPI
-      url: https://test.pypi.org/project/rul-adapt/
+      url: https://test.pypi.org/project/pypst/
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/install-poetry
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: PyPI
-      url: https://pypi.org/project/rul-adapt/
+      url: https://pypi.org/project/pypst/
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/install-poetry
