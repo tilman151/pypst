@@ -20,6 +20,10 @@ class Table:
     _rows: Optional[int | str | FrozenList[str]] = None
     _stroke: Optional[str | FrozenList[str] | frozendict[str, str]] = None
     _align: Optional[str | FrozenList[str]] = None
+    _fill: Optional[str | FrozenList[str]] = None
+    _gutter: Optional[int | str | FrozenList[str]] = None
+    _column_gutter: Optional[int | str | FrozenList[str]] = None
+    _row_gutter: Optional[int | str | FrozenList[str]] = None
     _lines: Optional[list["TableLine"]] = None
 
     @classmethod
@@ -132,14 +136,82 @@ class Table:
     @align.setter
     def align(self, value: Optional[str | list[str]]) -> None:
         if not isinstance(value, (str, list)) and value is not None:
-            raise ValueError("Stroke must be a string, list of strings, or None")
+            raise ValueError("Align must be a string, list of strings, or None")
         elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
-            raise ValueError("All elements in the list must be strings")
+            raise ValueError("All elements in the align list must be strings")
         if isinstance(value, list):
             self._align = FrozenList(value)
             self._align.freeze()
         else:
             self._align = value
+
+    @property
+    def fill(self) -> Optional[str | FrozenList[str]]:
+        return self._fill
+
+    @fill.setter
+    def fill(self, value: Optional[str | list[str]]) -> None:
+        if not isinstance(value, (str, list)) and value is not None:
+            raise ValueError("Fill must be a string, list of strings, or None")
+        elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
+            raise ValueError("All elements in the fill list must be strings")
+        if isinstance(value, list):
+            self._fill = FrozenList(value)
+            self._fill.freeze()
+        else:
+            self._fill = value
+
+    @property
+    def gutter(self) -> Optional[int | str | FrozenList[str]]:
+        return self._gutter
+
+    @gutter.setter
+    def gutter(self, value: Optional[int | str | list[str]]) -> None:
+        if not isinstance(value, (int | str, list)) and value is not None:
+            raise ValueError("Gutter must be an int, string, list of strings, or None")
+        elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
+            raise ValueError("All elements in the gutter list must be strings")
+        if isinstance(value, list):
+            self._gutter = FrozenList(value)
+            self._gutter.freeze()
+        else:
+            self._gutter = value
+
+    @property
+    def column_gutter(self) -> Optional[int | str | FrozenList[str]]:
+        return self._column_gutter
+
+    @column_gutter.setter
+    def column_gutter(self, value: Optional[int | str | list[str]]) -> None:
+        if not isinstance(value, (int | str, list)) and value is not None:
+            raise ValueError(
+                "Column gutter must be an int, string, list of strings, or None"
+            )
+        elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
+            raise ValueError("All elements in the column gutter list must be strings")
+        if isinstance(value, list):
+            self._column_gutter = FrozenList(value)
+            self._column_gutter.freeze()
+        else:
+            self._column_gutter = value
+
+    @property
+    def row_gutter(self) -> Optional[int | str | FrozenList[str]]:
+        return self._row_gutter
+
+    @row_gutter.setter
+    def row_gutter(self, value: Optional[int | str | list[str]]) -> None:
+        if not isinstance(value, (int | str, list)) and value is not None:
+            raise ValueError(
+                "Row gutter must be an int, string, list of strings, or None"
+            )
+        elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
+            raise ValueError("All elements in the row gutter list must be strings")
+        if isinstance(value, list):
+            self._row_gutter = FrozenList(value)
+            self._row_gutter.freeze()
+        else:
+            self._row_gutter = value
 
     def add_hline(
         self,
@@ -205,6 +277,18 @@ class Table:
         if self._align is not None:
             align = render_arg(self._align)
             args.append(f"align: {align}")
+        if self._fill is not None:
+            fill = render_arg(self._fill)
+            args.append(f"fill: {fill}")
+        if self._gutter is not None:
+            gutter = render_arg(self._gutter)
+            args.append(f"gutter: {gutter}")
+        if self._column_gutter is not None:
+            column_gutter = render_arg(self._column_gutter)
+            args.append(f"column-gutter: {column_gutter}")
+        if self._row_gutter is not None:
+            row_gutter = render_arg(self._row_gutter)
+            args.append(f"row-gutter: {row_gutter}")
         rendered_args = ",\n".join(args) + ",\n"
 
         return rendered_args

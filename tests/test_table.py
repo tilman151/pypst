@@ -4,7 +4,7 @@ from frozenlist import FrozenList
 
 from pypst import Cell
 from pypst.table import TableLine
-from tests.conftest import generate_all_combinations
+from tests.conftest import generate_all_combinations, create_table
 
 
 def test_from_dataframe_simple_headers(df):
@@ -118,6 +118,46 @@ def test_render_custom_align(df, align, rendered_align):
 
 
 @pytest.mark.parametrize(
+    "fill, rendered_fill",
+    [
+        ("blue",) * 2,
+        ("(x, _) => if x > 1 { blue } else { red }",) * 2,
+        (["blue", "red", "green"], "(blue, red, green)"),
+    ],
+)
+def test_render_custom_fill(df, fill, rendered_fill):
+    df.fill = fill
+    rendered = df.render().replace("\n  ", "\n")
+    assert rendered == (
+        f"#table(\ncolumns: 4,\nfill: {rendered_fill},\ntable.header[][A][B][C],"
+        "\n[0], [1], [4], [7],"
+        "\n[1], [2], [5], [8],"
+        "\n[2], [3], [6], [9]\n)"
+    )
+
+
+@pytest.mark.parametrize("gutter_attribute", ["gutter", "column_gutter", "row_gutter"])
+@pytest.mark.parametrize(
+    "gutter, rendered_gutter",
+    [
+        (1,) * 2,
+        ("5%",) * 2,
+        (["1%", "2%", "3%"], "(1%, 2%, 3%)"),
+    ],
+)
+def test_render_custom_gutter(df, gutter_attribute, gutter, rendered_gutter):
+    setattr(df, gutter_attribute, gutter)
+    rendered = df.render().replace("\n  ", "\n")
+    assert rendered == (
+        f"#table(\ncolumns: 4,\n{gutter_attribute.replace('_', '-')}: {rendered_gutter},"
+        f"\ntable.header[][A][B][C],"
+        "\n[0], [1], [4], [7],"
+        "\n[1], [2], [5], [8],"
+        "\n[2], [3], [6], [9]\n)"
+    )
+
+
+@pytest.mark.parametrize(
     "lines, rendered_lines",
     [
         ([("h", 1)], "table.hline(y: 1)"),
@@ -156,9 +196,9 @@ def test_attributes_are_frozen(table, tmp_path, request):
 
 
 @pytest.mark.integration
-def test_compilation(all_combinations, tmp_path):
+def test_compilation(styled_table, tmp_path):
     with open(tmp_path / "table.typ", mode="wt") as f:
-        f.write(all_combinations.render())
+        f.write(styled_table.render())
 
     typst.compile(tmp_path / "table.typ")
 
@@ -166,7 +206,9 @@ def test_compilation(all_combinations, tmp_path):
 @pytest.mark.visual
 def test_compilation_visual():
     _, all_combinations = generate_all_combinations()
-    table = "\n#pagebreak()\n".join([t.render() for t in all_combinations])
+    table = "\n#pagebreak()\n".join(
+        [create_table(*args).render() for args in all_combinations]
+    )
     with open("table.typ", mode="wt") as f:
         f.write(table)
 
