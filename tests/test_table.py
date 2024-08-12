@@ -118,6 +118,25 @@ def test_render_custom_align(df, align, rendered_align):
 
 
 @pytest.mark.parametrize(
+    "fill, rendered_fill",
+    [
+        ("blue",) * 2,
+        ("(x, _) => if x > 1 { blue } else { red }",) * 2,
+        (["blue", "red", "green"], "(blue, red, green)"),
+    ],
+)
+def test_render_custom_fill(df, fill, rendered_fill):
+    df.fill = fill
+    rendered = df.render().replace("\n  ", "\n")
+    assert rendered == (
+        f"#table(\ncolumns: 4,\nfill: {rendered_fill},\ntable.header[][A][B][C],"
+        "\n[0], [1], [4], [7],"
+        "\n[1], [2], [5], [8],"
+        "\n[2], [3], [6], [9]\n)"
+    )
+
+
+@pytest.mark.parametrize(
     "lines, rendered_lines",
     [
         ([("h", 1)], "table.hline(y: 1)"),

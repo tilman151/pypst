@@ -20,6 +20,7 @@ class Table:
     _rows: Optional[int | str | FrozenList[str]] = None
     _stroke: Optional[str | FrozenList[str] | frozendict[str, str]] = None
     _align: Optional[str | FrozenList[str]] = None
+    _fill: Optional[str | FrozenList[str]] = None
     _lines: Optional[list["TableLine"]] = None
 
     @classmethod
@@ -132,14 +133,30 @@ class Table:
     @align.setter
     def align(self, value: Optional[str | list[str]]) -> None:
         if not isinstance(value, (str, list)) and value is not None:
-            raise ValueError("Stroke must be a string, list of strings, or None")
+            raise ValueError("Align must be a string, list of strings, or None")
         elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
-            raise ValueError("All elements in the list must be strings")
+            raise ValueError("All elements in the align list must be strings")
         if isinstance(value, list):
             self._align = FrozenList(value)
             self._align.freeze()
         else:
             self._align = value
+
+    @property
+    def fill(self) -> Optional[str | FrozenList[str]]:
+        return self._fill
+
+    @fill.setter
+    def fill(self, value: Optional[str | list[str]]) -> None:
+        if not isinstance(value, (str, list)) and value is not None:
+            raise ValueError("Fill must be a string, list of strings, or None")
+        elif isinstance(value, list) and not all(isinstance(v, str) for v in value):
+            raise ValueError("All elements in the fill list must be strings")
+        if isinstance(value, list):
+            self._fill = FrozenList(value)
+            self._fill.freeze()
+        else:
+            self._fill = value
 
     def add_hline(
         self,
@@ -205,6 +222,9 @@ class Table:
         if self._align is not None:
             align = render_arg(self._align)
             args.append(f"align: {align}")
+        if self._fill is not None:
+            fill = render_arg(self._fill)
+            args.append(f"fill: {fill}")
         rendered_args = ",\n".join(args) + ",\n"
 
         return rendered_args
