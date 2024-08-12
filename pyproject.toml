@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pypst"
-version = "0.1.0"
+version = "0.0.0"
 description = ""
 authors = ["Tilman Krokotsch <t.krokotsch@gmail.com>"]
 readme = "README.md"
@@ -19,6 +19,7 @@ mypy = "^1.11.1"
 pandas-stubs = "^2.2.2.240807"
 typst = "^0.11.1"
 poethepoet = "^0.27.0"
+commitizen = "^3.29.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -36,4 +37,17 @@ integration = "pytest -m integration"
 visual = "pytest -m visual"
 lint = "ruff check pypst tests"
 lint-types = "mypy pypst"
+lint-commits = "cz check --rev-range HEAD"
 format = "ruff format pypst tests"
+bump = "cz bump --changelog"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "$version"
+version_scheme = "semver"
+version_provider = "poetry"
+update_changelog_on_bump = true
+major_version_zero = true
+version_files = [
+    "pypst/__init__.py"
+]
