@@ -12,8 +12,10 @@ def render(obj: Renderable | int | str | Sequence[str] | Mapping[str, str]) -> s
     return rendered
 
 
-def render_type(arg: int | str | Sequence[str] | Mapping[str, str]) -> str:
-    if isinstance(arg, int | float):
+def render_type(arg: int | str | bool | Sequence[str] | Mapping[str, str]) -> str:
+    if isinstance(arg, bool):
+        rendered_arg = str(arg).lower()
+    elif isinstance(arg, int | float):
         rendered_arg = str(arg)
     elif isinstance(arg, str):
         rendered_arg = arg
