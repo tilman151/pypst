@@ -1,7 +1,7 @@
 import pytest
 import typst
 
-from pypst.itemize import Itemize
+from pypst.itemize import Itemize, Enumerate
 
 
 def test_add():
@@ -24,6 +24,16 @@ def test_simple_nested_list():
     assert (
         itemize.render()
         == "- First item\n  - Nested item 1\n  - Nested item 2\n- Second item"
+    )
+
+
+def test_simple_nested_with_enum():
+    itemize = Itemize(
+        ["First item", Enumerate(["Nested item 1", "Nested item 2"]), "Second item"]
+    )
+    assert (
+        itemize.render()
+        == "- First item\n  + Nested item 1\n  + Nested item 2\n- Second item"
     )
 
 
