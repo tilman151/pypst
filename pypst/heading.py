@@ -17,7 +17,7 @@ class Heading:
     outlined: Optional[bool] = None
     bookmarked: Optional[bool] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.level is not None and self.level < 1:
             raise ValueError("Level must be greater than 0")
         if self.depth is not None and self.depth < 1:

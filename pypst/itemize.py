@@ -90,7 +90,7 @@ class Enumerate:
         return rendered
 
 
-def _check_elements(elements):
+def _check_elements(elements: list[Renderable | str]) -> None:
     if isinstance(elements, list):
         if any(not isinstance(e, (Renderable, str)) for e in elements):
             raise ValueError("Encountered invalid element type in elements list")
@@ -100,7 +100,7 @@ def _check_elements(elements):
         raise ValueError(f"Invalid elements type {type(elements)}")
 
 
-def _check_element(element):
+def _check_element(element: Renderable | str) -> None:
     if not isinstance(element, (Renderable, str)):
         raise ValueError(f"Invalid element type: {type(element)}")
     if isinstance(element, Document):
