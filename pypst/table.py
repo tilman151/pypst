@@ -13,6 +13,35 @@ from pypst.utils import render_type, render_mapping
 
 @dataclass
 class Table:
+    """
+    A table element.
+
+    A table is constructed from a pandas DataFrame using the [from_dataframe][pypst.table.Table.from_dataframe] method.
+    Afterward, styling options can be set using the properties of the class.
+    Manual horizontal and vertical lines can be added using the
+    `add_hline` and `add_vline` methods.
+
+    Most properties that accept a string also accept functions in Typst.
+    Typst functions can be supplied in string form,
+    for example, `"(x, y) => if x > y then {red} else {black}"`.
+
+    Hint:
+        The header, index and row data can be accessed via the `header_data`,
+        `index_data` and `row_data` properties.
+        The lists can't be modified directly,
+        but the elements can be accessed to apply styling to individual cells.
+
+    Args:
+        columns: The number of columns or column styling array.
+        rows: The number of rows or row styling array.
+        stroke: The stroke style for the table cells.
+        align: The alignment for the table columns.
+        fill: The background color for the table cells.
+        gutter: The spacing between table cells.
+        column_gutter: The spacing between table columns.
+        row_gutter: The spacing between table rows.
+    """
+
     header_data: FrozenList[FrozenList["Cell"]] = FrozenList(FrozenList([]))
     index_data: FrozenList[FrozenList["Cell"]] = FrozenList(FrozenList([]))
     row_data: FrozenList[FrozenList["Cell"]] = FrozenList(FrozenList([]))
@@ -28,6 +57,63 @@ class Table:
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame) -> "Table":
+        """
+        Create a new table element from a Pandas DataFrame.
+
+        The `columns` property of the data frame will be used as the header data and
+        the `index` property will be used as the index data.
+        The header is rendered as the `table.header` element and the index as the
+        first columns in each row.
+        Multi-level indexes are supported.
+
+        After creating the table, styling options can be set using the properties of
+        the table class.
+
+        Args:
+            df: The DataFrame to create the table from.
+
+        Examples:
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+
+            >>> df = pd.DataFrame(
+            ...     [[1, 3], [2, 4]],
+            ...     columns=pd.MultiIndex.from_tuples([("A", "mean"), ("A", "std")]),
+            ...     index=["X", "Y"]
+            ... )
+            >>> table = Table.from_dataframe(df)
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              table.header[#table.cell(rowspan: 2)[]][#table.cell(colspan: 2)[A]][mean][std],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+
+            >>> df = pd.DataFrame(
+            ...     [[1, 3], [2, 4]],
+            ...     columns=["A", "B"],
+            ...     index=pd.MultiIndex.from_tuples([("X", "mean"), ("X", "std")])
+            ... )
+            >>> table = Table.from_dataframe(df)
+            >>> print(table.render())
+            #table(
+              columns: 4,
+              table.header[#table.cell(colspan: 2)[]][A][B],
+              [#table.cell(rowspan: 2)[X]], [mean], [1], [3],
+              [std], [2], [4]
+            )
+
+        Returns:
+            The new table element.
+        """
         table = cls()
         table.header_data = _parse_index(df.columns, direction="cols")
         table.index_data = _parse_index(df.index, direction="rows")
@@ -44,6 +130,39 @@ class Table:
 
     @property
     def columns(self) -> Optional[int | str | FrozenList[str]]:
+        """
+        The number of columns or column styling array.
+
+        This property is automatically set when creating a table from a DataFrame.
+        It can be replaced by an integer to apply styling to all columns or by a list
+        to apply styling to individual columns.
+
+        If a list is provided, it must have the same length as the number of columns
+        plus the number of index levels.
+
+        Examples:
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.columns = "50%"
+            >>> print(table.render())
+            #table(
+              columns: 50%,
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.columns = ["10pt", "20pt", "30pt"] # two columns plus index
+            >>> print(table.render())
+            #table(
+              columns: (10pt, 20pt, 30pt),
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+        """
         return self._columns
 
     @columns.setter
@@ -74,6 +193,41 @@ class Table:
 
     @property
     def rows(self) -> Optional[int | str | FrozenList[str]]:
+        """
+        The number of rows or row styling array.
+
+        This property is automatically set when creating a table from a DataFrame.
+        It can be replaced by an integer to apply styling to all rows or by a list
+        to apply styling to individual rows.
+
+        If a list is provided, it must have the same length as the number of rows
+        plus the number of header levels.
+
+        Examples:
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.rows = "50%"
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              rows: 50%,
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.rows = ["10pt", "20pt", "30pt"] # two rows plus header
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              rows: (10pt, 20pt, 30pt),
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+        """
         return self._rows
 
     @rows.setter
@@ -106,6 +260,50 @@ class Table:
 
     @property
     def stroke(self) -> Optional[str | FrozenList[str] | frozendict[str, str]]:
+        """
+        The stroke style for the table cells.
+
+        This can be either a string to style all cells,
+        a list of strings to style each column,
+        or a dictionary to control the stroke of each of the cells' sides.
+
+        Examples:
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.stroke = "2pt"
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              stroke: 2pt,
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.stroke = ["2pt", "1pt", "3pt"]
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              stroke: (2pt, 1pt, 3pt),
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.stroke = {"top": "2pt", "bottom": "1pt"}
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              stroke: (top: 2pt, bottom: 1pt),
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+        """
         return self._stroke
 
     @stroke.setter
@@ -131,6 +329,37 @@ class Table:
 
     @property
     def align(self) -> Optional[str | FrozenList[str]]:
+        """
+        The alignment for the table columns.
+
+        This can be either a string to align all columns,
+        or a list of strings to align individual columns.
+
+        Examples:
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.align = "right"
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              align: right,
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.align = ["left", "center", "right"]  # two columns plus index
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              align: (left, center, right),
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+        """
         return self._align
 
     @align.setter
@@ -147,6 +376,37 @@ class Table:
 
     @property
     def fill(self) -> Optional[str | FrozenList[str]]:
+        """
+        The background color for the table cells.
+
+        This can be either a string to fill all cells,
+        or a list of strings to fill individual columns.
+
+        Examples:
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.fill = "red"
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              fill: red,
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.fill = ["red", "blue", "green"]  # two columns plus index
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              fill: (red, blue, green),
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+        """
         return self._fill
 
     @fill.setter
@@ -163,6 +423,37 @@ class Table:
 
     @property
     def gutter(self) -> Optional[int | str | FrozenList[str]]:
+        """
+        The spacing between table cells.
+
+        This can be either an integer/string to set the gutter for all cells,
+        or a list of strings to set the gutter for individual columns.
+
+        Examples:
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.gutter = 10
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              gutter: 10,
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.gutter = ["10pt", "20pt", "30pt"]  # two columns plus index
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              gutter: (10pt, 20pt, 30pt),
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+        """
         return self._gutter
 
     @gutter.setter
@@ -179,6 +470,37 @@ class Table:
 
     @property
     def column_gutter(self) -> Optional[int | str | FrozenList[str]]:
+        """
+        The spacing between table columns.
+
+        This can be either an integer/string to set the column gutter for all columns,
+        or a list of strings to set the column gutter for individual columns.
+
+        Examples:
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.column_gutter = 10
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              column-gutter: 10,
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.column_gutter = ["10pt", "20pt", "30pt"]  # two columns plus index
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              column-gutter: (10pt, 20pt, 30pt),
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+        """
         return self._column_gutter
 
     @column_gutter.setter
@@ -197,6 +519,37 @@ class Table:
 
     @property
     def row_gutter(self) -> Optional[int | str | FrozenList[str]]:
+        """
+        The spacing between table rows.
+
+        This can be either an integer/string to set the row gutter for all cells,
+        or a list of strings to set the row gutter for individual columns.
+
+        Examples:
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.row_gutter = 10
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              row-gutter: 10,
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.row_gutter = ["10pt", "20pt", "30pt"]  # two columns plus index
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              row-gutter: (10pt, 20pt, 30pt),
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+        """
         return self._row_gutter
 
     @row_gutter.setter
@@ -221,6 +574,29 @@ class Table:
         stroke: Optional[str] = None,
         position: Optional[Literal["start", "end"]] = None,
     ) -> None:
+        """
+        Add a horizontal line to the table at the specified row position.
+
+        Args:
+            y: The row position.
+            start: The column to start the line.
+            end: The column to end the line.
+            stroke: The stroke style for the line.
+            position: Whether the line should appear before or after the row.
+
+        Examples:
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.add_hline(1, stroke="2pt")
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              table.hline(y: 1, stroke: 2pt),
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+        """
         self._add_line(TableLine(y, "horizontal", start, end, stroke, position))
 
     def add_vline(
@@ -231,6 +607,29 @@ class Table:
         stroke: Optional[str] = None,
         position: Optional[Literal["start", "end"]] = None,
     ) -> None:
+        """
+        Add a vertical line to the table at the specified column position.
+
+        Args:
+            x: The column position.
+            start: The row to start the line.
+            end: The row to end the line.
+            stroke: The stroke style for the line.
+            position: Whether the line should appear before or after the column.
+
+        Examples:
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df)
+            >>> table.add_vline(1, stroke="2pt")
+            >>> print(table.render())
+            #table(
+              columns: 3,
+              table.vline(x: 1, stroke: 2pt),
+              table.header[][A][B],
+              [X], [1], [3],
+              [Y], [2], [4]
+            )
+        """
         self._add_line(TableLine(x, "vertical", start, end, stroke, position))
 
     def _add_line(self, line: "TableLine") -> None:
@@ -245,6 +644,15 @@ class Table:
         return f"Table(headers={self.header_data}, index={self.index_data}, rows={self.row_data})"
 
     def render(self) -> str:
+        """
+        Render the table element to a string.
+
+        Vertical and horizontal lines are rendered before the table body.
+        All attributes and the body are indented by two spaces.
+
+        Returns:
+            The rendered table element.
+        """
         headers = itertools.chain(*self.header_data)
         index_placeholder = Cell(
             rowspan=len(self.header_data), colspan=len(self.index_data)
