@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Literal
 
 from pypst import utils
 from pypst.document import Document
@@ -8,9 +8,41 @@ from pypst.renderable import Renderable
 
 @dataclass
 class Figure:
+    """
+    A figure is a block element that contains another element.
+
+    It can be used to add captions, numbering, and other metadata to the element.
+
+    Args:
+        body: The element to be rendered inside the figure.
+        placement: The placement of the figure.
+        caption: The caption of the figure.
+        kind: The kind of the figure.
+        supplement: The supplement of the figure added when the figure is referenced.
+        numbering: The numbering scheme of the figure.
+        gap: The gap between body and caption.
+        outlined: Whether the figure is added to the outline.
+
+    Examples:
+        >>> fig = Figure("[Hello, World!]", caption="[This is content.]")
+        >>> print(fig.render())
+        #figure(
+          [Hello, World!],
+          caption: [This is content.]
+        )
+
+        >>> from pypst import Image
+        >>> fig = Figure(Image("image.png"), caption="[This is an image.]")
+        >>> print(fig.render())
+        #figure(
+          image("image.png"),
+          caption: [This is an image.]
+        )
+    """
+
     body: Renderable | str
 
-    placement: Optional[str] = None
+    placement: Optional[Literal["auto", "top", "bottom"]] = None
     caption: Optional[str] = None
     kind: Optional[str] = None
     supplement: Optional[str] = None
@@ -27,6 +59,14 @@ class Figure:
             )
 
     def render(self) -> str:
+        """
+        Render the figure.
+
+        The body and attributes of the figure is indented by two spaces.
+
+        Returns:
+            The rendered figure.
+        """
         # remove the leading '#' because we're in code mode
         args = [utils.render(self.body).lstrip("#")]
         if self.placement is not None:
