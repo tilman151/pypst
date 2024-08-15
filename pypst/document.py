@@ -41,7 +41,7 @@ class Document:
 
     def render(self) -> str:
         imports = "\n".join([i.render() for i in self.imports])
-        body = "\n".join(utils.render(b) for b in self.body)
+        body = "\n\n".join(utils.render(b) for b in self.body)
 
         if imports:
             return f"{imports}\n\n{body}"
