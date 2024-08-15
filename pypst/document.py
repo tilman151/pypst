@@ -15,24 +15,30 @@ class Document:
 
     Examples:
             >>> doc = Document("Hello, world!")
-            >>> doc.render()
-            'Hello, world!'
+            >>> print(doc.render())
+            Hello, world!
 
             >>> doc = Document(["Hello,", "world!"])
-            >>> doc.render()
-            'Hello,\\n\\nworld!'
+            >>> print(doc.render())
+            Hello,
+            <BLANKLINE>
+            world!
 
             >>> doc = Document()
             >>> doc.add("Hello,")
             >>> doc.add("world!")
-            >>> doc.render()
-            'Hello,\\n\\nworld!'
+            >>> print(doc.render())
+            Hello,
+            <BLANKLINE>
+            world!
 
             >>> doc = Document()
             >>> doc.add_import("module")
             >>> doc.add("Hello, world!")
-            >>> doc.render()
-            '#import \"module\"\\n\\nHello, world!'
+            >>> print(doc.render())
+            #import "module"
+            <BLANKLINE>
+            Hello, world!
     """
 
     _body: list[Renderable | str]
