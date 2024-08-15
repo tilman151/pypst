@@ -4,6 +4,34 @@ from pypst.utils import render_mapping, render_sequence
 
 
 class Cell:
+    """
+    A cell element that can be rendered as a table cell.
+
+    Normally, the user does not need to create a cell directly.
+    When creating a table from a data frame, the table will automatically create cells.
+    These cells can then be modified to style them individually.
+
+    Args:
+        value: The content of the cell.
+        rowspan: The number of rows the cell spans.
+        colspan: The number of columns the cell spans.
+        fill: The background color of the cell.
+        align: The alignment of the cell content.
+        stroke: The stroke style of the cell.
+
+    Examples:
+        >>> cell = Cell(
+        ...     "Value",
+        ...     rowspan=2,
+        ...     colspan=3,
+        ...     fill="red",
+        ...     align="center",
+        ...     stroke="black"
+        ... )
+        >>> print(cell)
+        [#table.cell(rowspan: 2, colspan: 3, fill: red, align: center, stroke: black)[Value]]
+    """
+
     def __init__(
         self,
         value: Optional[Any] = None,
@@ -43,6 +71,14 @@ class Cell:
         )
 
     def render(self) -> str:
+        """
+        Render the cell to string.
+
+        The cell function is surrounded by a content block to fit the table syntax.
+
+        Returns:
+            The rendered cell.
+        """
         args = []
         if self.rowspan > 1:
             args.append(f"rowspan: {self.rowspan}")
