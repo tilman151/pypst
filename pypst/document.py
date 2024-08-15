@@ -9,11 +9,15 @@ class Document:
     _body: list[Renderable | str]
     imports: list["Import"]
 
-    def __init__(self, body: Renderable | str | list[Renderable | str]) -> None:
+    def __init__(
+        self, body: Optional[Renderable | str | list[Renderable | str]]
+    ) -> None:
         self._body = []
         self.imports = []
 
-        if not isinstance(body, list):
+        if body is None:
+            body = []
+        elif not isinstance(body, list):
             body = [body]
         for b in body:
             self.add(b)
