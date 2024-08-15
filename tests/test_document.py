@@ -22,8 +22,8 @@ def test_document_with_multiple_body_elements(dummy_body):
     document.add("This is another text")
     document.add(dummy_body)
     assert document.render() == (
-        "#text(fill: red)[Hello, world!]\n"
-        "This is another text\n"
+        "#text(fill: red)[Hello, world!]\n\n"
+        "This is another text\n\n"
         "#text(fill: red)[Hello, world!]"
     )
 
