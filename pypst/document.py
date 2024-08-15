@@ -10,7 +10,7 @@ class Document:
     imports: list["Import"]
 
     def __init__(
-        self, body: Optional[Renderable | str | list[Renderable | str]]
+        self, body: Optional[Renderable | str | list[Renderable | str]] = None
     ) -> None:
         self._body = []
         self.imports = []
