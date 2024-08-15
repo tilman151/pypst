@@ -55,6 +55,7 @@ markers = [
     "integration: mark a test as an integration test that compiles Typst code",
     "visual: mark a test as a visual test used for manual inspection",
 ]
+testpaths = ["tests"]
 addopts = "--doctest-modules"
 
 [tool.poe.tasks]
