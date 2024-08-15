@@ -22,6 +22,11 @@ python = "^3.10"
 pandas = "^2.2.2"
 frozenlist = "^1.4.1"
 frozendict = "^2.4.4"
+mkdocs-section-index = "^0.3.9"
+mkdocs-gen-files = "^0.5.0"
+mkdocs-autorefs = "^1.0.1"
+mkdocs-literate-nav = "^0.6.1"
+mkdocstrings-python = "^1.10.8"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -33,6 +38,14 @@ typst = "^0.11.1"
 poethepoet = "^0.27.0"
 commitizen = "^3.29.0"
 
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.6.0"
+mkdocs-material = "^9.5.31"
+mkdocstrings = "^0.25.2"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
@@ -42,6 +55,8 @@ markers = [
     "integration: mark a test as an integration test that compiles Typst code",
     "visual: mark a test as a visual test used for manual inspection",
 ]
+testpaths = ["tests"]
+addopts = "--doctest-modules"
 
 [tool.poe.tasks]
 unit = "pytest -m 'not integration and not visual'"

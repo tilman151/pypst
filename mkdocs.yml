@@ -1,0 +1,37 @@
+site_name: Pypst
+site_url: https://krokotsch.eu/pypst
+repo_url: https://github.com/tilman151/pypst
+
+theme:
+  name: material
+  palette:
+    primary: cyan
+    accent: teal
+  features:
+    - search.suggest
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+
+watch: [ pypst ]
+
+plugins:
+  - search
+  - autorefs
+  - section-index
+  - gen-files:
+      scripts: [ docs/gen_ref_pages.py ]
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_source: false
