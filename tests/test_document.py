@@ -6,7 +6,7 @@ from pypst.document import Document, Import
 
 
 def test_empty_document():
-    document = Document(None)
+    document = Document()
 
     assert len(document.body) == 0
     assert document.render() == ""
