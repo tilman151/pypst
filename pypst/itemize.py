@@ -9,6 +9,57 @@ from pypst.renderable import Renderable
 
 @dataclass
 class Itemize:
+    """
+    An element that represents a bullet point list.
+
+    If no arguments are provided, the list will be rendered as a Markdown list.
+    Otherwise, the list will be rendered as a function.
+    It is possible to nest lists in both Markdown and functional forms.
+
+    Args:
+        elements: List of elements to be rendered as bullet points.
+        tight: Whether to use list or leading spacing between elements.
+        marker: The bullet point markers to use.
+        indent: The indent for each element.
+        body_indent: The spacing between the marker and the element body.
+        spacing: The spacing of a non-tight list.
+
+    Examples:
+        >>> itemize = Itemize(["First", "Second"])
+        >>> print(itemize.render())
+        - First
+        - Second
+
+        >>> itemize = Itemize(["First", "Second"], tight=True)
+        >>> print(itemize.render())
+        #list(
+          tight: true,
+          [First],
+          [Second]
+        )
+
+        >>> itemize = Itemize(["First", Itemize(["Nested 1", "Nested 2"]), "Second"])
+        >>> print(itemize.render())
+        - First
+          - Nested 1
+          - Nested 2
+        - Second
+
+        >>> enumerate = Itemize(["First", Enumerate(["Nested 1", "Nested 2"]), "Second"])
+        >>> print(enumerate.render())
+        - First
+          + Nested 1
+          + Nested 2
+        - Second
+
+        >>> itemize = Itemize([])
+        >>> itemize.add("First")
+        >>> itemize.add("Second")
+        >>> print(itemize.render())
+        - First
+        - Second
+    """
+
     elements: list[Renderable | str]
     tight: Optional[bool] = None
     marker: Optional[str | list[str]] = None
@@ -20,10 +71,25 @@ class Itemize:
         _check_elements(self.elements)
 
     def add(self, element: Renderable | str) -> None:
+        """
+        Add an element to the bullet point list.
+
+        Args:
+            element: The new element.
+        """
         _check_element(element)
         self.elements.append(element)
 
     def render(self) -> str:
+        """
+        Render the bullet point list to string.
+
+        If any arguments are provided, the list will be rendered as a function.
+        Otherwise, the list will be rendered as a Markdown list.
+
+        Returns:
+            The rendered list.
+        """
         args = []
         if self.tight:
             args.append(f"tight: {utils.render(self.tight)}")
@@ -46,6 +112,52 @@ class Itemize:
 
 @dataclass
 class Enumerate:
+    """
+    An element that represents a numbered list.
+
+    If no arguments are provided, the list will be rendered as a Markdown list.
+    Otherwise, the list will be rendered as a function.
+    It is possible to nest lists in both Markdown and functional forms.
+
+    Args:
+        elements: List of elements to be rendered as numbered points.
+        tight: Whether to use list or leading spacing between elements.
+        numbering: The numbering scheme to use.
+        start: The starting number for the list.
+        full: Whether to use full numbering with parent enumerations.
+        indent: The indent for each element.
+        body_indent: The spacing between the number and the element body.
+        spacing: The spacing of a non-tight list.
+        number_align: The alignment of the numbers.
+
+    Examples:
+        >>> enumerate = Enumerate(["First", "Second"])
+        >>> print(enumerate.render())
+        + First
+        + Second
+
+        >>> enumerate = Enumerate(["First", Enumerate(["Nested 1", "Nested 2"]), "Second"])
+        >>> print(enumerate.render())
+        + First
+          + Nested 1
+          + Nested 2
+        + Second
+
+        >>> enumerate = Enumerate(["First", Itemize(["Nested 1", "Nested 2"]), "Second"])
+        >>> print(enumerate.render())
+        + First
+          - Nested 1
+          - Nested 2
+        + Second
+
+        >>> enumerate = Enumerate([])
+        >>> enumerate.add("First")
+        >>> enumerate.add("Second")
+        >>> print(enumerate.render())
+        + First
+        + Second
+    """
+
     elements: list[Renderable | str]
     tight: Optional[bool] = None
     numbering: Optional[str] = None
@@ -60,10 +172,25 @@ class Enumerate:
         _check_elements(self.elements)
 
     def add(self, element: Renderable | str) -> None:
+        """
+        Add an element to the numbered list.
+
+        Args:
+            element: The new element.
+        """
         _check_element(element)
         self.elements.append(element)
 
     def render(self) -> str:
+        """
+        Render the numbered list to string.
+
+        If any arguments are provided, the list will be rendered as a function.
+        Otherwise, the list will be rendered as a Markdown list.
+
+        Returns:
+            The rendered numbered list.
+        """
         args = []
         if self.tight:
             args.append(f"tight: {utils.render(self.tight)}")
