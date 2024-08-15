@@ -10,7 +10,7 @@ Columns and indexes with multiple levels are supported.
 
 Pypst produces human-readable Typst code that you can modify and extend.
 
-![Example script and output](examples/example.png)
+![Example script and output](docs/examples/example.png)
 
 ## Installation
 
@@ -83,7 +83,7 @@ Include the file in your `main.typ` Typst document.
 #lorem(100)
 ```
 
-Compile with `typst compile main.typ` to receive a PDF file like [this](examples/main.pdf).
+Compile with `typst compile main.typ` to receive a PDF file like [this](docs/examples/main.pdf).
 By using `typst watch main.typ`, you can automatically recompile the when your Python script runs.
 
 
