@@ -5,6 +5,13 @@ from pypst.figure import Figure
 from pypst.document import Document, Import
 
 
+def test_empty_document():
+    document = Document(None)
+
+    assert len(document.body) == 0
+    assert document.render() == ""
+
+
 def test_document(dummy_body):
     document = Document(dummy_body)
     assert document.render() == "#text(fill: red)[Hello, world!]"
