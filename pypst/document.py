@@ -16,23 +16,23 @@ class Document:
     Examples:
             >>> doc = Document("Hello, world!")
             >>> doc.render()
-            "Hello, world!"
+            'Hello, world!'
 
             >>> doc = Document(["Hello,", "world!"])
             >>> doc.render()
-            "Hello,\\n\\nworld!"
+            'Hello,\\n\\nworld!'
 
             >>> doc = Document()
             >>> doc.add("Hello,")
             >>> doc.add("world!")
             >>> doc.render()
-            "Hello,\\n\\nworld!"
+            'Hello,\\n\\nworld!'
 
             >>> doc = Document()
             >>> doc.add_import("module")
             >>> doc.add("Hello, world!")
             >>> doc.render()
-            "#import \"module\"\\n\\nHello, world!"
+            '#import \"module\"\\n\\nHello, world!'
     """
 
     _body: list[Renderable | str]
