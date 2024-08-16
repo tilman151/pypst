@@ -1,0 +1,4 @@
+- [Home](index.md)
+- [Basic Usage](usage.md)
+- [Tables from Pandas](pandas.md)
+- [API](api/)

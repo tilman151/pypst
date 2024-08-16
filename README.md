@@ -2,13 +2,14 @@
 
 Declarative Typst in Python with Pandas data frame support.
 
-Generate Typst tables from Pandas data frames and style them directly in Python.
-Stop copy-pasting data from your analysis scripts to your Typst reports and
-presentations.
-Instead, generate them directly in Python with Pypst and use `#include("my-table.typ")`.
-Columns and indexes with multiple levels are supported.
+Pypst helps you dynamically generate [Typst](https://typst.app) code directly in Python. No manual string manipulation required.
+It has two major use cases:
+
+- Generating full Typst documents to be rendered as PDFs
+- Generating and styling Typst tables from Pandas data frames to be included in another Typst document
 
 Pypst produces human-readable Typst code that you can modify and extend.
+It will not compile Typst code for you, but you can either use the [Typst compiler](https://github.com/typst/typst/releases) to do so in the command line or install the [Typst Python package](https://pypi.org/project/typst/).
 
 ![Example script and output](docs/examples/example.png)
 
@@ -22,105 +23,64 @@ pip install pypst
 
 ## Usage
 
-Create a data frame and do any data wrangling you need.
+Pypst contains classes that represent Typst elements.
+You can create a Typst document by instantiating these classes and nesting them as needed.
 
-```python
-import pandas as pd
+```pycon
+>>> import pypst
+>>> heading = pypst.Heading("My Heading", level=1)
+>>> itemize = pypst.Itemize(["First item", "Second item", "Third item"])
 
-df = pd.DataFrame({
-    "Name": ["Alice", "Bob", "Charlie"],
-    "Age": [25, 30, 35],
-    "City": ["New York", "Los Angeles", "New York"]
-})
-df = df.groupby("City").agg({"Name": "count", "Age": "mean"})
 ```
 
-Create a Typst table from the data frame and apply styling.
-Then wrap it in a figure and save it to a file.
+Each of these classes has a `render` method that returns the Typst code as a string.
 
-```python
-import pypst
+```pycon
+>>> print(heading.render())
+= My Heading
+>>> print(itemize.render())
+- First item
+- Second item
+- Third item
 
-table = pypst.Table.from_dataframe(df)
-table.stroke = "none"
-table.align = "(x, _) => if calc.odd(x) {left} else {right}"
-table.add_hline(1, stroke="1.5pt")
-table.add_hline(len(df) + df.columns.nlevels, stroke="1.5pt")
-
-figure = pypst.Figure(table, caption='"This is my table."')
-
-with open("my-table.typ", mode="wt") as f:
-    f.write(figure.render())
 ```
 
-The resulting file looks like this:
+If you want to combine multiple elements into a single document, you can use the `Document` class.
+You can even add imports for other Typst files or packages.
 
-```typst
-#figure(
-  table(
-    columns: 3,
-    stroke: none,
-    align: (x, _) => if calc.odd(x) {left} else {right},
-    table.hline(y: 1, stroke: 1.5pt),
-    table.hline(y: 3, stroke: 1.5pt),
-    table.header[][Name][Age],
-    [Los Angeles], [1], [30.0],
-    [New York], [2], [30.0]
-  ),
-  caption: "This is my table."
-)
+```pycon
+>>> document = pypst.Document([heading, itemize])
+>>> document.add_import("utils.typ")
+>>> print(document.render())
+#import "utils.typ"
+<BLANKLINE>
+= My Heading
+<BLANKLINE>
+- First item
+- Second item
+- Third item
+
 ```
 
-Include the file in your `main.typ` Typst document.
+The output of the `render` method can be written to a `.typ` file for compilation.
+The [documentation](https://krokotsch.eu/pypst) contains more extensive tutorials on generating [documents](https://krokotsch.eu/pypst/usage) and generating [tables from Pandas data frames](https://krokotsch.eu/pypst/pandas).
 
-```typst
-= My Section Heading
+## Limitations
 
-#lorem(100)
-
-#include("my-table.typ")
-
-#lorem(100)
-```
-
-Compile with `typst compile main.typ` to receive a PDF file like [this](docs/examples/main.pdf).
-By using `typst watch main.typ`, you can automatically recompile the when your Python script runs.
-
-
-If your table uses third-party packages, you can wrap the figure in a document and include the proper imports.
-
-```python
-document = pypst.Document(figure)
-document.add_import("@preview/unify:0.4.3", ["num"])
-```
-
-The resulting file looks like this:
-
-```typst
-#import "@preview/unify:0.4.3": num
-
-#figure(
-  table(
-    columns: 3,
-    stroke: none,
-    align: (x, _) => if calc.odd(x) {left} else {right},
-    table.hline(y: 1, stroke: 1.5pt),
-    table.hline(y: 3, stroke: 1.5pt),
-    table.header[][Name][Age],
-    [Los Angeles], [1], [30.0],
-    [New York], [2], [30.0]
-  ),
-  caption: "This is my table."
-)
-```
+Pypst is not a Typst compiler.
+It doesn't check for syntax errors or compile Typst code into PDFs.
+Pypst interprets any string as a Typst literal, so `stroke = "1pt"` will be rendered as `stroke: 1pt`.
+If you want to pass a string literal, you need to wrap it in quotes, for example, `caption = '"My Caption"'`.
+When Pypst encounters a string wrapped in quotes without need, it will automatically remove them.
+For a content block, you can wrap the string in brackets instead, for example, `caption = "[My content]"`.
 
 ## Roadmap
 
 If there is time and people are interested, I would like to add the following features:
 
-- [ ] Complete table attributes (for example, `fill` is missing)
+- [x] Complete table attributes (for example, `fill` is missing)
 - [ ] Support automatic formating for common workflows, like automatically merging multi-level columns with mean and standard deviation
-- [ ] Add more Typst elements (like headings, paragraphs, or lists) to make building more complex documents easier
+- [x] Add more Typst elements (like headings or lists) to make building more complex documents easier
 
 ## Contributing
 
