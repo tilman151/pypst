@@ -8,6 +8,38 @@ from pypst.renderable import Renderable
 
 @dataclass
 class Heading:
+    """
+    A Heading element.
+
+    If only the body and level are provided,
+    the heading will be rendered as in Markdown.
+    If any other attribute is provided, the heading will be rendered as a function.
+
+    Args:
+        body: The content of the heading.
+        level: The absolute nesting depth of the heading, starting from one.
+        depth: The relative nesting depth of the heading, starting from one.
+        offset: The starting offset of each heading's level,
+                used to turn its relative depth into its absolute level.
+        numbering: The numbering scheme, for example, `"1.1"`.
+        supplement: The supplement for the heading.
+        outlined: Whether the heading appears in the outline.
+        bookmarked: Whether the heading appears as a bookmark in PDF.
+
+    Examples:
+        >>> h = Heading("Heading 1", level=1)
+        >>> print(h.render())
+        = Heading 1
+
+        >>> h = Heading("Heading 1", level=3)
+        >>> print(h.render())
+        === Heading 1
+
+        >>> h = Heading('"Heading 1"', depth=2, offset=1)
+        >>> print(h.render())
+        #heading("Heading 1", depth: 2, offset: 1)
+    """
+
     body: Renderable | str
     level: Optional[int] = None
     depth: Optional[int] = None
@@ -36,6 +68,16 @@ class Heading:
             )
 
     def render(self) -> str:
+        """
+        Render the heading to a string.
+
+        If only body and level are provided,
+        the heading will be rendered as in Markdown.
+        If any other attribute is provided, the heading will be rendered as a function.
+
+        Returns:
+            The rendered heading element.
+        """
         args = [utils.render(self.body)]
         if self.level is not None:
             args.append(f"level: {self.level}")
