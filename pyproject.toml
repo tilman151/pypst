@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pypst"
-version = "0.1.0"
+version = "0.2.0"
 description = "Declarative Typst in Python with Pandas data frame support."
 authors = ["Tilman Krokotsch <tilman@krokotsch.eu>"]
 readme = "README.md"
