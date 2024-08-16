@@ -30,16 +30,6 @@ class Table:
         `index_data` and `row_data` properties.
         The lists can't be modified directly,
         but the elements can be accessed to apply styling to individual cells.
-
-    Args:
-        columns: The number of columns or column styling array.
-        rows: The number of rows or row styling array.
-        stroke: The stroke style for the table cells.
-        align: The alignment for the table columns.
-        fill: The background color for the table cells.
-        gutter: The spacing between table cells.
-        column_gutter: The spacing between table columns.
-        row_gutter: The spacing between table rows.
     """
 
     header_data: FrozenList[FrozenList["Cell"]] = FrozenList(FrozenList([]))
