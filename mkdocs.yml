@@ -9,6 +9,7 @@ theme:
     accent: teal
   features:
     - search.suggest
+    - content.code.annotate
 
 markdown_extensions:
   - attr_list
@@ -18,8 +19,13 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
 
 watch: [ pypst ]
+
+hooks:
+  - docs/hooks.py
 
 plugins:
   - search
