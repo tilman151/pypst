@@ -81,6 +81,7 @@ class Foo(utils.Dictionary):
 
 def test_dataclass():
     assert Foo().render() == "#(bar: 3, qux: 3.14)"
+    assert str(Foo()) == Foo().render()
     assert Foo(bar=5, qux=None).render() == "#(bar: 5)"
     assert Foo(bar=5, qux="none").render() == "#(bar: 5, qux: none)"
 
@@ -98,7 +99,9 @@ class FooFn(utils.Function):
 
 
 def test_function():
-    assert FooFn(4).render() == "#foo-fn(4, qux: 16)"
+    obj = FooFn(4)
+    assert obj.render() == "#foo-fn(4, qux: 16)"
+    assert obj.render() == str(obj)
 
 
 @pytest.mark.integration

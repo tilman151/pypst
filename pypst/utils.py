@@ -159,6 +159,9 @@ class Dictionary:
         '#(bar: 4, qux: none)'
     """
 
+    def __str__(self) -> str:
+        return self.render()
+
     def render(self) -> str:
         """
         Dataclass rendering to a Typst dictionary.
@@ -176,8 +179,11 @@ class Dictionary:
         """
 
         def check(field: Field) -> bool:
+            # When the value is `None`, check whether that should be kept.
             if getattr(self, field.name) is None:
                 return field.metadata.get("keep_none", False)
+
+            # Keep otherwise.
             return True
 
         return filter(check, fields(self))
@@ -221,14 +227,27 @@ class Function(Dictionary):
 
         Modify `fields_to_render` to control which fields are included.
         """
-        # kebab-case the ClassName
-        function = re.sub(
-            r"([a-z0-9])([A-Z])", r"\1-\2", self.__class__.__name__
-        ).lower()
+
+        function = self.function()
+
         options = ", ".join(
             render_code(getattr(self, field.name))
             if field.metadata.get("positional", False)
             else f"{field.name}: {render_code(getattr(self, field.name))}"
             for field in self.fields_to_render()
         )
+
         return f"#{function}({options})"
+
+    @classmethod
+    def function(cls) -> str:
+        """
+        Class method that returns the Typst function name that it represents.
+
+        Defaults to a kebab-case transformation of the ClassName.
+        """
+        return re.sub(
+            r"([a-z0-9])([A-Z])",
+            r"\1-\2",
+            cls.__name__,
+        ).lower()
