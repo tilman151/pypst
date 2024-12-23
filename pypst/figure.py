@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Optional, Literal
+from dataclasses import dataclass, field
+from typing import Literal
 
 from pypst import utils
 from pypst.document import Document
@@ -7,7 +7,7 @@ from pypst.renderable import Renderable
 
 
 @dataclass
-class Figure:
+class Figure(utils.Function):
     """
     A figure is a block element that contains another element.
 
@@ -26,29 +26,23 @@ class Figure:
     Examples:
         >>> fig = Figure("[Hello, World!]", caption="[This is content.]")
         >>> print(fig.render())
-        #figure(
-          [Hello, World!],
-          caption: [This is content.]
-        )
+        #figure([Hello, World!], caption: [This is content.])
 
         >>> from pypst import Image
         >>> fig = Figure(Image("image.png"), caption="[This is an image.]")
         >>> print(fig.render())
-        #figure(
-          image("image.png"),
-          caption: [This is an image.]
-        )
+        #figure(image("image.png"), caption: [This is an image.])
     """
 
-    body: Renderable | str
+    body: Renderable | str = field(metadata={"positional": True})
 
-    placement: Optional[Literal["auto", "top", "bottom"]] = None
-    caption: Optional[str] = None
-    kind: Optional[str] = None
-    supplement: Optional[str] = None
-    numbering: Optional[str] = None
-    gap: Optional[str] = None
-    outlined: Optional[bool] = None
+    placement: Literal["auto", "top", "bottom"] | None = None
+    caption: Renderable | str | None = None
+    kind: Renderable | str | None = None
+    supplement: Renderable | str | None = None
+    numbering: Renderable | str | None = None
+    gap: Renderable | str | None = None
+    outlined: bool | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.body, (Renderable, str)):
@@ -57,34 +51,3 @@ class Figure:
             raise ValueError(
                 "Document cannot be set as body, because it needs to be top-level"
             )
-
-    def render(self) -> str:
-        """
-        Render the figure.
-
-        The body and attributes of the figure is indented by two spaces.
-
-        Returns:
-            The rendered figure.
-        """
-        # remove the leading '#' because we're in code mode
-        args = [utils.render(self.body).lstrip("#")]
-        if self.placement is not None:
-            args.append(f"placement: {self.placement}")
-        if self.caption is not None:
-            args.append(f"caption: {self.caption}")
-        if self.kind is not None:
-            args.append(f"kind: {self.kind}")
-        if self.supplement is not None:
-            args.append(f"supplement: {self.supplement}")
-        if self.numbering is not None:
-            args.append(f"numbering: {self.numbering}")
-        if self.gap is not None:
-            args.append(f"gap: {self.gap}")
-        if self.outlined is not None:
-            args.append(f"outlined: {'true' if self.outlined else 'false'}")
-
-        # indent body and args by 2 spaces
-        inner = ",\n".join(args).replace("\n", "\n  ")
-
-        return "#figure(\n  {0}\n)".format(inner)

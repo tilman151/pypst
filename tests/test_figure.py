@@ -7,53 +7,51 @@ from tests.conftest import DummyBody
 
 def test_dummy_figure(dummy_body):
     figure = Figure(DummyBody())
-    assert figure.render() == "#figure(\n  text(fill: red)[Hello, world!]\n)"
+    assert figure.render() == "#figure(text(fill: red)[Hello, world!])"
 
 
 def test_figure_with_placement(dummy_body):
     figure = Figure(dummy_body, placement="top")
-    rendered = figure.render().replace("\n  ", "\n")
-    assert rendered == "#figure(\ntext(fill: red)[Hello, world!],\nplacement: top\n)"
+    rendered = figure.render()
+    assert rendered == "#figure(text(fill: red)[Hello, world!], placement: top)"
 
 
 def test_figure_with_caption(dummy_body):
     figure = Figure(dummy_body, caption='"This is a caption"')
-    rendered = figure.render().replace("\n  ", "\n")
+    rendered = figure.render()
     assert rendered == (
-        '#figure(\ntext(fill: red)[Hello, world!],\ncaption: "This is a caption"\n)'
+        '#figure(text(fill: red)[Hello, world!], caption: "This is a caption")'
     )
 
 
 def test_figure_with_kind(dummy_body):
     figure = Figure(dummy_body, kind="table")
-    rendered = figure.render().replace("\n  ", "\n")
-    assert rendered == "#figure(\ntext(fill: red)[Hello, world!],\nkind: table\n)"
+    rendered = figure.render()
+    assert rendered == "#figure(text(fill: red)[Hello, world!], kind: table)"
 
 
 def test_figure_with_supplement(dummy_body):
     figure = Figure(dummy_body, supplement='"Table"')
-    rendered = figure.render().replace("\n  ", "\n")
-    assert rendered == (
-        '#figure(\ntext(fill: red)[Hello, world!],\nsupplement: "Table"\n)'
-    )
+    rendered = figure.render()
+    assert rendered == ('#figure(text(fill: red)[Hello, world!], supplement: "Table")')
 
 
 def test_figure_with_numbering(dummy_body):
     figure = Figure(dummy_body, numbering='"1"')
-    rendered = figure.render().replace("\n  ", "\n")
-    assert rendered == '#figure(\ntext(fill: red)[Hello, world!],\nnumbering: "1"\n)'
+    rendered = figure.render()
+    assert rendered == '#figure(text(fill: red)[Hello, world!], numbering: "1")'
 
 
 def test_figure_with_gap(dummy_body):
     figure = Figure(dummy_body, gap="10pt")
-    rendered = figure.render().replace("\n  ", "\n")
-    assert rendered == "#figure(\ntext(fill: red)[Hello, world!],\ngap: 10pt\n)"
+    rendered = figure.render()
+    assert rendered == "#figure(text(fill: red)[Hello, world!], gap: 10pt)"
 
 
 def test_figure_with_outlined(dummy_body):
     figure = Figure(dummy_body, outlined=True)
-    rendered = figure.render().replace("\n  ", "\n")
-    assert rendered == "#figure(\ntext(fill: red)[Hello, world!],\noutlined: true\n)"
+    rendered = figure.render()
+    assert rendered == "#figure(text(fill: red)[Hello, world!], outlined: true)"
 
 
 @pytest.mark.integration
