@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
 
 from pypst import utils
 from pypst.document import Document
@@ -7,7 +6,7 @@ from pypst.renderable import Renderable
 
 
 @dataclass
-class Heading:
+class Heading(utils.Function):
     """
     A Heading element.
 
@@ -40,14 +39,14 @@ class Heading:
         #heading("Heading 1", depth: 2, offset: 1)
     """
 
-    body: Renderable | str
-    level: Optional[int] = None
-    depth: Optional[int] = None
-    offset: Optional[int] = None
-    numbering: Optional[str] = None
-    supplement: Optional[Renderable | str] = None
-    outlined: Optional[bool] = None
-    bookmarked: Optional[bool] = None
+    body: Renderable | str = field(metadata={"positional": True})
+    level: int | None = None
+    depth: int | None = None
+    offset: int | None = None
+    numbering: str | None = None
+    supplement: Renderable | str | None = None
+    outlined: bool | None = None
+    bookmarked: bool | None = None
 
     def __post_init__(self) -> None:
         if self.level is not None and self.level < 1:
@@ -78,28 +77,9 @@ class Heading:
         Returns:
             The rendered heading element.
         """
-        args = [utils.render(self.body)]
-        if self.level is not None:
-            args.append(f"level: {self.level}")
-        if self.depth is not None:
-            args.append(f"depth: {self.depth}")
-        if self.offset is not None:
-            args.append(f"offset: {self.offset}")
-        if self.numbering is not None:
-            args.append(f"numbering: {self.numbering}")
-        if self.supplement is not None:
-            args.append(f"supplement: {utils.render(self.supplement)}")
-        if self.outlined is not None:
-            args.append(f"outlined: {utils.render(self.outlined)}")
-        if self.bookmarked is not None:
-            args.append(f"bookmarked: {utils.render(self.bookmarked)}")
-
-        if self.level is not None and len(args) == 2:
+        if self.level is not None and len(list(self.fields_to_render())) == 2:
             # remove unnecessary quotes, because Markdown style is not in code mode
-            body = args[0].strip('"')
-            heading = "=" * self.level + f" {body}"
+            body = self.body.strip('"')
+            return "=" * self.level + f" {body}"
         else:
-            args[0] = args[0].lstrip("#")  # remove hashtag because of code mode
-            heading = f"#heading({', '.join(args)})"
-
-        return heading
+            return super().render()
