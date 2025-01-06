@@ -1,6 +1,6 @@
 import re
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import Field, dataclass, fields, is_dataclass
+from dataclasses import Field, fields, is_dataclass
 from datetime import date, datetime, timedelta
 from typing import Any
 
