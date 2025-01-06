@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
 from typing import Literal
 
-from pypst.utils import RenderDataclass
+from pypst.utils import Function
 
 
 @dataclass
-class Image(RenderDataclass):
+class Image(Function):
     """
     Image object to add image elements.
 

@@ -234,10 +234,9 @@ def camel_to_kebab_case(arg: str) -> str:
     ).lower()
 
 
-@dataclass
-class RenderDataclass:
+class _RenderDataclass:
     """
-    Helper class that implements default dataclass rendering for mappings and functions.
+    Helper class that implements default dataclass rendering for dictionaries and functions.
     """
 
     def __str__(self) -> str:
@@ -248,3 +247,50 @@ class RenderDataclass:
         Render this dataclass as a string. See `render_dataclass` for more information.
         """
         return render_dataclass(self)
+
+
+class Dictionary(_RenderDataclass):
+    """
+    Helper class that implements default dataclass rendering for dictionaries in Typst.
+
+    Example:
+        >>> from dataclasses import dataclass, field
+        >>> @dataclass
+        ... class Foo(Dictionary):
+        ...    bar: int | None = 4
+        ...    qux: int | None = field(default=16, metadata={"keep_none": True})
+        >>>
+        >>> Foo().render()
+        '#(bar: 4, qux: 16)'
+        >>> Foo(bar=None).render()
+        '#(qux: 16)'
+        >>> Foo(qux=None).render()
+        '#(bar: 4, qux: none)'
+    """
+
+
+class Function(_RenderDataclass):
+    """
+    Helper class that implements default dataclass rendering for function calls in Typst.
+
+    By default, the class name is converted to kebab-case as the function name.
+    You can override this behavior by setting the `__is_function__` class variable
+    to a string of your choice.
+
+    Example:
+        >>> from dataclasses import dataclass, field
+        >>> @dataclass
+        ... class FooFn(Function):
+        ...    __is_function__ = True
+        ...    bar: int | None = field(metadata={"positional": True})
+        ...    qux: int | None = field(default=16, metadata={"keep_none": True})
+        >>>
+        >>> FooFn(4).render()
+        '#foo-fn(4, qux: 16)'
+        >>> FooFn(None).render()
+        '#foo-fn(qux: 16)'
+        >>> FooFn(4, qux=None).render()
+        '#foo-fn(4, qux: none)'
+    """
+
+    __is_function__: bool | str = True

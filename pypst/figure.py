@@ -3,11 +3,11 @@ from typing import Literal
 
 from pypst.document import Document
 from pypst.renderable import Renderable
-from pypst.utils import RenderDataclass
+from pypst.utils import Function
 
 
 @dataclass
-class Figure(RenderDataclass):
+class Figure(Function):
     """
     A figure is a block element that contains another element.
 

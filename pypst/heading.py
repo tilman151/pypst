@@ -2,11 +2,11 @@ from dataclasses import dataclass, field
 
 from pypst.document import Document
 from pypst.renderable import Renderable
-from pypst.utils import RenderDataclass, dataclass_fields_to_render
+from pypst.utils import Function, dataclass_fields_to_render
 
 
 @dataclass
-class Heading(RenderDataclass):
+class Heading(Function):
     """
     A Heading element.
 
