@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from pypst.document import Document
 from pypst.renderable import Renderable
-from pypst.utils import Function, dataclass_fields_to_render
+from pypst.utils import Function, dataclass_fields_to_render, render
 
 
 @dataclass
@@ -81,7 +81,7 @@ class Heading(Function):
         """
         if self.level is not None and len(list(dataclass_fields_to_render(self))) == 2:
             # remove unnecessary quotes, because Markdown style is not in code mode
-            body = self.body.strip('"')
-            return "=" * self.level + f" {body}"
+            body = render(self.body).strip('"')
+            return f"{'=' * self.level} {body}"
         else:
             return super().render()

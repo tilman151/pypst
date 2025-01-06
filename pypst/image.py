@@ -29,13 +29,13 @@ class Image(Function):
     __is_function__ = True
 
     path: str = field(metadata={"positional": True})
-    format: Literal["png", "jpg", "gif", "svg"] | None = None
+    format: Literal["png", "jpg", "gif", "svg"] | str | None = None
     width: str | None = None
     height: str | None = None
     alt: str | None = None
-    fit: Literal["cover", "contain", "stretch"] | None = None
+    fit: Literal["cover", "contain", "stretch"] | str | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.path.startswith('"'):
             self.path = f'"{self.path}"'
 
