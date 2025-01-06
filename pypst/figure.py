@@ -1,13 +1,13 @@
 from dataclasses import dataclass, field
 from typing import Literal
 
-from pypst import utils
 from pypst.document import Document
 from pypst.renderable import Renderable
+from pypst.utils import RenderDataclass
 
 
 @dataclass
-class Figure(utils.Function):
+class Figure(RenderDataclass):
     """
     A figure is a block element that contains another element.
 
@@ -33,6 +33,8 @@ class Figure(utils.Function):
         >>> print(fig.render())
         #figure(image("image.png"), caption: [This is an image.])
     """
+
+    __is_function__ = True
 
     body: Renderable | str = field(metadata={"positional": True})
 

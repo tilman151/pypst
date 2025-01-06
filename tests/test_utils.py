@@ -74,7 +74,7 @@ def test_timedelta_compile(test_compile):
 
 
 @dataclass
-class Foo(utils.Dictionary):
+class Foo(utils.RenderDataclass):
     bar: int = 3
     qux: float | None = 3.14
 
@@ -93,7 +93,8 @@ def test_dataclass_compile(test_compile):
 
 
 @dataclass
-class FooFn(utils.Function):
+class FooFn(utils.RenderDataclass):
+    __is_function__ = True
     bar: int = field(metadata={"positional": True})
     qux: int = 16
 
@@ -107,7 +108,7 @@ def test_function():
 @pytest.mark.integration
 def test_function_compile(test_compile):
     @dataclass
-    class Rect(utils.Function):
+    class Rect(utils.RenderDataclass):
         body: str | None = field(default=None, metadata={"positional": True})
         width: str = "10em"
         height: str = "10%"

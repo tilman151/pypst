@@ -1,12 +1,12 @@
 from dataclasses import dataclass, field
 
-from pypst import utils
 from pypst.document import Document
 from pypst.renderable import Renderable
+from pypst.utils import RenderDataclass, dataclass_fields_to_render
 
 
 @dataclass
-class Heading(utils.Function):
+class Heading(RenderDataclass):
     """
     A Heading element.
 
@@ -38,6 +38,8 @@ class Heading(utils.Function):
         >>> print(h.render())
         #heading("Heading 1", depth: 2, offset: 1)
     """
+
+    __is_function__ = True
 
     body: Renderable | str = field(metadata={"positional": True})
     level: int | None = None
@@ -77,7 +79,7 @@ class Heading(utils.Function):
         Returns:
             The rendered heading element.
         """
-        if self.level is not None and len(list(self.fields_to_render())) == 2:
+        if self.level is not None and len(list(dataclass_fields_to_render(self))) == 2:
             # remove unnecessary quotes, because Markdown style is not in code mode
             body = self.body.strip('"')
             return "=" * self.level + f" {body}"

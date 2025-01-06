@@ -1,6 +1,6 @@
 import re
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import Field, dataclass, fields
+from dataclasses import Field, dataclass, fields, is_dataclass
 from datetime import date, datetime, timedelta
 from typing import Any
 
@@ -77,6 +77,8 @@ def render_type(
         rendered_arg = arg
     elif isinstance(arg, Sequence):
         rendered_arg = render_sequence(arg)
+    elif is_dataclass(arg):
+        rendered_arg = render_dataclass(arg)
     elif isinstance(arg, Mapping):
         rendered_arg = render_mapping(arg)
     elif isinstance(arg, date):
@@ -132,31 +134,110 @@ def render_timedelta(arg: timedelta) -> str:
     return f"#duration{render_mapping(obj)}"
 
 
-@dataclass
-class Dictionary:
+def render_dataclass(arg: Any) -> str:
     """
-    Helper class to render Python dataclasses by iterating over its fields
-    as if it were a dictionary.
+    Render a dataclass as either a mapping or a function call.
 
-    Inherit from `Dictionary` to inherit the render method
-    and use it with your dataclass.
+    The existence and value of an `__is_function__` member on the object
+    determines whether it is rendered as a function call. Setting it to return
+
+    Rendering of positional arguments in a Typst function call can be accomplished
+    by setting the `positional=True` flag on the dataclass field's metadata.
 
     You can specify that `None` values should be rendered instead
-    of being skipped with `keep_none=True` on the field's metadata.
+    of being skipped with `keep_none=True` on the dataclass field's metadata.
 
-    Example:
+    Examples:
         >>> from dataclasses import dataclass, field
         >>> @dataclass
-        ... class Foo(Dictionary):
+        ... class Foo:
         ...    bar: int | None = 4
         ...    qux: int | None = field(default=16, metadata={"keep_none": True})
         >>>
-        >>> Foo().render()
+        >>> render(Foo())
         '#(bar: 4, qux: 16)'
-        >>> Foo(bar=None).render()
+        >>> render(Foo(bar=None))
         '#(qux: 16)'
-        >>> Foo(qux=None).render()
+        >>> render(Foo(qux=None))
         '#(bar: 4, qux: none)'
+
+        >>> @dataclass
+        ... class FooFn:
+        ...    __is_function__ = True
+        ...    bar: int | None = field(metadata={"positional": True})
+        ...    qux: int | None = field(default=16, metadata={"keep_none": True})
+        >>>
+        >>> render(FooFn(4))
+        '#foo-fn(4, qux: 16)'
+        >>> render(FooFn(None))
+        '#foo-fn(qux: 16)'
+        >>> render(FooFn(4, qux=None))
+        '#foo-fn(4, qux: none)'
+    """
+
+    function = getattr(arg, "__is_function__", False)
+    fields = dataclass_fields_to_render(arg)
+
+    if function:
+        function = (
+            function
+            if isinstance(function, str)
+            else camel_to_kebab_case(arg.__class__.__name__)
+        )
+
+        arguments = ", ".join(
+            render_code(getattr(arg, field.name))
+            if field.metadata.get("positional", False)
+            else f"{field.name}: {render_code(getattr(arg, field.name))}"
+            for field in fields
+        )
+
+        rendered = f"#{function}({arguments})"
+    else:
+        mapping = render_mapping(
+            {field.name: getattr(arg, field.name) for field in fields}
+        )
+        rendered = f"#{mapping}"
+
+    return rendered
+
+
+def dataclass_fields_to_render(arg: Any) -> Iterable[Field]:
+    """
+    These dataclass fields should be rendered.
+    Defaults to skipping any fields with a value of `None`.
+    """
+
+    def check(field: Field) -> bool:
+        # When the value is `None`, check whether that should be kept.
+        if getattr(arg, field.name) is None:
+            return field.metadata.get("keep_none", False)
+
+        # Keep otherwise.
+        return True
+
+    return filter(check, fields(arg))
+
+
+def camel_to_kebab_case(arg: str) -> str:
+    """
+    Transform a CamelCase string to kebab-case.
+
+    Example:
+        >>> camel_to_kebab_case("ClassName")
+        'class-name'
+    """
+    return re.sub(
+        r"([a-z0-9])([A-Z])",
+        r"\1-\2",
+        arg,
+    ).lower()
+
+
+@dataclass
+class RenderDataclass:
+    """
+    Helper class that implements default dataclass rendering for mappings and functions.
     """
 
     def __str__(self) -> str:
@@ -164,90 +245,6 @@ class Dictionary:
 
     def render(self) -> str:
         """
-        Dataclass rendering to a Typst dictionary.
-
-        Modify `fields_to_render` to control which fields are included.
+        Render this dataclass as a string. See `render_dataclass` for more information.
         """
-        mapping = render_mapping(
-            {field.name: getattr(self, field.name) for field in self.fields_to_render()}
-        )
-        return f"#{mapping}"
-
-    def fields_to_render(self) -> Iterable[Field]:
-        """
-        These fields should be rendered. Defaults to skipping any fields with a value of `None`.
-        """
-
-        def check(field: Field) -> bool:
-            # When the value is `None`, check whether that should be kept.
-            if getattr(self, field.name) is None:
-                return field.metadata.get("keep_none", False)
-
-            # Keep otherwise.
-            return True
-
-        return filter(check, fields(self))
-
-
-@dataclass
-class Function(Dictionary):
-    """
-    Helper class to render Typst function calls from a Python dataclass.
-
-    Inherit from `Function` to inherit the render method.
-    The function name is derived from the class name
-    and is converted to kebab-case.
-
-    The dataclass' fields are used as the function arguments.
-
-    You can specify a positional argument in Typst by adding
-    `positional=True` on the field's metadata.
-
-    You can specify that `None` values should be rendered instead
-    of being skipped with `keep_none=True` on the field's metadata.
-
-    Example:
-        >>> from dataclasses import dataclass, field
-        >>> @dataclass
-        ... class FooFn(Function):
-        ...    bar: int | None = field(metadata={"positional": True})
-        ...    qux: int | None = field(default=16, metadata={"keep_none": True})
-        >>>
-        >>> FooFn(4).render()
-        '#foo-fn(4, qux: 16)'
-        >>> FooFn(None).render()
-        '#foo-fn(qux: 16)'
-        >>> FooFn(4, qux=None).render()
-        '#foo-fn(4, qux: none)'
-    """
-
-    def render(self) -> str:
-        """
-        Dataclass rendering to a Typst function call.
-
-        Modify `fields_to_render` to control which fields are included.
-        """
-
-        function = self.function()
-
-        options = ", ".join(
-            render_code(getattr(self, field.name))
-            if field.metadata.get("positional", False)
-            else f"{field.name}: {render_code(getattr(self, field.name))}"
-            for field in self.fields_to_render()
-        )
-
-        return f"#{function}({options})"
-
-    @classmethod
-    def function(cls) -> str:
-        """
-        Class method that returns the Typst function name that it represents.
-
-        Defaults to a kebab-case transformation of the ClassName.
-        """
-        return re.sub(
-            r"([a-z0-9])([A-Z])",
-            r"\1-\2",
-            cls.__name__,
-        ).lower()
+        return render_dataclass(self)

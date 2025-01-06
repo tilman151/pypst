@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
 from typing import Literal
 
-from pypst.utils import Function
+from pypst.utils import RenderDataclass
 
 
 @dataclass
-class Image(Function):
+class Image(RenderDataclass):
     """
     Image object to add image elements.
 
@@ -25,6 +25,8 @@ class Image(Function):
         >>> print(image.render())
         #image("image.png", width: 100%, height: 50%)
     """
+
+    __is_function__ = True
 
     path: str = field(metadata={"positional": True})
     format: Literal["png", "jpg", "gif", "svg"] | None = None
