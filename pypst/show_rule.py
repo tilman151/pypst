@@ -19,6 +19,20 @@ class ShowRule:
         >>> rule = ShowRule(selector="heading", argument="it", body="text(fill: red, it)")
         >>> print(rule.render())
         #show heading: it => text(fill: red, it)
+
+        >>> rule = ShowRule(selector="heading", argument="it", body=Functional(["v(0.5em)", "it"]))
+        >>> print(rule.render())
+        #show heading: it => {
+          v(0.5em)
+          it
+        }
+
+        >>> rule = ShowRule(selector="heading", argument="it", body=Content(["#v(0.5em)", "#it"]))
+        >>> print(rule.render())
+        #show heading: it => [
+          #v(0.5em)
+          #it
+        ]
     """
 
     selector: str | Renderable | None = None

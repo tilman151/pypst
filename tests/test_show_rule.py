@@ -1,6 +1,6 @@
 import pytest
 
-from pypst import Document, Heading, ShowRule
+from pypst import Content, Document, Functional, Heading, ShowRule
 
 
 def test_show_rule_no_arg():
@@ -12,6 +12,20 @@ def test_show_rule():
     obj = ShowRule(selector="heading", argument="it", body="text(fill: red, it)")
 
     assert obj.render() == "#show heading: it => text(fill: red, it)"
+
+
+def test_show_rule_functional():
+    obj = ShowRule(
+        selector="heading", argument="it", body=Functional(["v(0.5em)", "it"])
+    )
+    assert obj.render() == "#show heading: it => {\n  v(0.5em)\n  it\n}"
+
+
+def test_show_rule_content():
+    obj = ShowRule(
+        selector="heading", argument="it", body=Content(["#v(0.5em)", "#it"])
+    )
+    assert obj.render() == "#show heading: it => [\n  #v(0.5em)\n  #it\n]"
 
 
 @pytest.mark.integration
