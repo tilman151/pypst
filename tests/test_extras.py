@@ -26,6 +26,7 @@ def test_error_on_importing_table_without_pandas(monkeypatch, missing_pandas):
 
 
 def test_error_on_using_Table_without_pandas(monkeypatch, missing_pandas):
+    monkeypatch.delitem(sys.modules, "pypst")
     monkeypatch.delitem(sys.modules, "pypst.table")
 
     import pypst
