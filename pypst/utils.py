@@ -248,7 +248,7 @@ def render_fenced(
     Render a Typst fenced code block such as #{} and #[].
     """
 
-    context = "context " if context else ""
+    ctx = "context " if context else ""
 
     if isinstance(body, (str, Renderable)):
         body = render_fn(body)
@@ -260,14 +260,14 @@ def render_fenced(
         body = render_fn(body)
 
     if indent is None:
-        return f"#{context}{start}{body}{end}"
+        return f"#{ctx}{start}{body}{end}"
 
     if "\n" in body:
         newline = f"\n{indent * " "}"
         indented = body.replace("\n", newline)
-        return f"#{context}{start}{newline}{indented}\n{end}"
+        return f"#{ctx}{start}{newline}{indented}\n{end}"
 
-    return f"#{context}{start}{body}{end}"
+    return f"#{ctx}{start}{body}{end}"
 
 
 class _RenderDataclass:

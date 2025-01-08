@@ -24,7 +24,7 @@ class ShowRule:
     selector: str | Renderable | None = None
     argument: str | Renderable | None = None
     body: str | Renderable | None = None
-    indent: int | None = 2
+    indent: int = 2
 
     def __post_init__(self) -> None:
         if not isinstance(self.body, (Functional, Content)):
