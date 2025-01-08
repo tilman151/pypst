@@ -223,7 +223,7 @@ def camel_to_kebab_case(arg: str) -> str:
     """
     Transform a CamelCase string to kebab-case.
 
-    Example:
+    Examples:
         >>> camel_to_kebab_case("ClassName")
         'class-name'
     """
@@ -253,7 +253,7 @@ class Dictionary(_RenderDataclass):
     """
     Helper class that implements default dataclass rendering for dictionaries in Typst.
 
-    Example:
+    Examples:
         >>> from dataclasses import dataclass, field
         >>> @dataclass
         ... class Foo(Dictionary):
@@ -277,7 +277,7 @@ class Function(_RenderDataclass):
     You can override this behavior by setting the `__is_function__` class variable
     to a string of your choice.
 
-    Example:
+    Examples:
         >>> from dataclasses import dataclass, field
         >>> @dataclass
         ... class FooFn(Function):
