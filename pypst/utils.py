@@ -322,6 +322,8 @@ class String:
         """
         Render the internal body to a string, escaping any symbols in JSON fashion.
         """
-        body = json.dumps("" if self.body is None else render_code(self.body))
+        body = json.dumps(
+            "" if self.body is None else render_code(self.body), ensure_ascii=False
+        )
         # Always assume we're in content mode.
         return f"#{body}"

@@ -137,6 +137,11 @@ def test_escaped_string():
     )
 
 
+def test_char_string():
+    s = utils.String("Hëlló wòrld!")
+    assert s.render() == '#"Hëlló wòrld!"'
+
+
 @pytest.mark.integration
 def test_escaped_string_compile(test_compile):
     line = "The most 'common' string in programming is: " + '"Hello world!".'
