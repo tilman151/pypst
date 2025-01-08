@@ -18,7 +18,7 @@ runs:
         python-version-file: ".python-version"
         cache: "poetry"
     - if: ${{ inputs.optional-groups == '' }}
-      run: poetry install
+      run: poetry install --all-extras
       shell: "bash"
     - if: ${{ inputs.optional-groups != '' }}
       run: poetry install --with ${{ inputs.optional-groups }}
