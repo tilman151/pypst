@@ -19,7 +19,6 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pandas = "^2.2.2"
 frozenlist = "^1.4.1"
 frozendict = "^2.4.4"
 
@@ -31,6 +30,9 @@ pandas-stubs = "^2.2.2.240807"
 typst = "^0.11.1"
 poethepoet = "^0.27.0"
 commitizen = "^3.29.0"
+
+[project.optional-dependencies]
+pandas = ["pandas (^2.2.2)"]
 
 [tool.poetry.group.docs]
 optional = true
