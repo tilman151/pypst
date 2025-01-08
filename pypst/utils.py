@@ -246,6 +246,18 @@ def render_fenced(
 ) -> str:
     """
     Render a Typst fenced code block such as #{} and #[].
+
+    Example:
+        >>> render_fenced()
+        '#{}'
+
+        >>> from pypst import Content, SetRule
+        >>> string = render_fenced([SetRule("text", {"fill": "red"}), Content("This text will be red.")])
+        >>> print(string)
+        #{
+          set text(fill: red)
+          [This text will be red.]
+        }
     """
 
     ctx = "context " if context else ""
