@@ -1,6 +1,7 @@
+import json
 import re
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import Field, fields, is_dataclass
+from dataclasses import Field, dataclass, fields, is_dataclass
 from datetime import date, datetime, timedelta
 from typing import Any
 
@@ -294,3 +295,33 @@ class Function(_RenderDataclass):
     """
 
     __is_function__: bool | str = True
+
+
+@dataclass
+class String:
+    """
+    String helper that wraps any content in quotes.
+
+    Example:
+        >>> line = (
+        ...     "The most 'common' string in programming is: "
+        ...     '"Hello world!".'
+        ... )
+        >>> s = String(line)
+        >>> print(s.render())
+        #"The most 'common' string in programming is: \\"Hello world!\\"."
+    """
+
+    body: str | Renderable | None = None
+
+    def __post_init__(self) -> None:
+        if isinstance(self.body, String):
+            self.body = self.body.body
+
+    def render(self) -> str:
+        """
+        Render the internal body to a string, escaping any symbols in JSON fashion.
+        """
+        body = json.dumps("" if self.body is None else render_code(self.body))
+        # Always assume we're in content mode.
+        return f"#{body}"

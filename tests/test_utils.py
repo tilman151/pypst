@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 
 import pytest
 
-from pypst import Image, utils
+from pypst import Document, Image, utils
 
 
 def test_flat_mapping():
@@ -121,3 +121,27 @@ def test_function_compile(test_compile):
     obj = Rect('"hello world"')
     assert obj.render() == '#rect("hello world", width: 10em, height: 10%, fill: red)'
     test_compile(obj)
+
+
+def test_empty_string():
+    obj = utils.String()
+    assert obj.render() == '#""'
+
+
+def test_escaped_string():
+    line = "The most 'common' string in programming is: " + '"Hello world!".'
+    s = utils.String(line)
+    assert (
+        s.render()
+        == '#"The most \'common\' string in programming is: \\"Hello world!\\"."'
+    )
+
+
+@pytest.mark.integration
+def test_escaped_string_compile(test_compile):
+    line = "The most 'common' string in programming is: " + '"Hello world!".'
+    s = utils.String(line)
+    let = f"#let foo = {utils.render_code(s)}"
+    check = '#assert.eq(foo, "The most \'common\' string in programming is: \\"Hello world!\\".")'
+    doc = Document([let, check])
+    test_compile(doc)

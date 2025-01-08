@@ -1,16 +1,21 @@
 from typing import Any
 
+from pypst.cell import Cell
+from pypst.content import Content
+from pypst.document import Document
+from pypst.figure import Figure
+from pypst.functional import Functional
+from pypst.heading import Heading
+from pypst.image import Image
+from pypst.itemize import Enumerate, Itemize
+from pypst.renderable import Plain, Renderable
+from pypst.set import Set
+from pypst.show import Show
+
 try:
     from pypst.table import Table  # needed to be included in code completion
 except ModuleNotFoundError:
     pass
-from pypst.cell import Cell
-from pypst.figure import Figure
-from pypst.document import Document
-from pypst.heading import Heading
-from pypst.itemize import Itemize, Enumerate
-from pypst.image import Image
-from pypst.renderable import Renderable, Plain
 
 
 def __getattr__(name: str) -> Any:
@@ -23,15 +28,19 @@ def __getattr__(name: str) -> Any:
 
 
 __all__ = [
-    "Table",
     "Cell",
-    "Figure",
+    "Content",
     "Document",
-    "Heading",
-    "Itemize",
     "Enumerate",
+    "Figure",
+    "Functional",
+    "Heading",
     "Image",
-    "Renderable",
+    "Itemize",
     "Plain",
+    "Renderable",
+    "Set",
+    "Show",
+    "Table",
 ]
 __version__ = "0.5.0"
