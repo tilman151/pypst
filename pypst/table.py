@@ -5,7 +5,9 @@ from typing import Optional, Union, Literal
 try:
     import pandas as pd
 except ImportError:
-    raise ModuleNotFoundError("Could not find Pandas. To use the table functionality, Pypst needs to be installed as 'pypst[pandas]'.")
+    raise ModuleNotFoundError(
+        "Could not find Pandas. To use the table functionality, Pypst needs to be installed as 'pypst[pandas]'."
+    )
 from frozendict import frozendict
 
 from frozenlist import FrozenList

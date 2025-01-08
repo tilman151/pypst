@@ -20,7 +20,7 @@ class Renderable(ABC):
             if any("render" in B.__dict__ for B in subclass.__mro__):
                 return True
 
-        return NotImplemented # type: ignore[no-any-return]
+        return NotImplemented  # type: ignore[no-any-return]
 
 
 @dataclass

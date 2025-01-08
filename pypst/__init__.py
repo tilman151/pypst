@@ -1,5 +1,7 @@
+from typing import Any
+
 try:
-    from pypst.table import Table
+    from pypst.table import Table  # needed to be included in code completion
 except ModuleNotFoundError:
     pass
 from pypst.cell import Cell
@@ -9,6 +11,16 @@ from pypst.heading import Heading
 from pypst.itemize import Itemize, Enumerate
 from pypst.image import Image
 from pypst.renderable import Renderable, Plain
+
+
+def __getattr__(name: str) -> Any:
+    """Lazily import Table to check for pandas."""
+    if name == "Table":
+        from pypst.table import Table
+
+        return Table
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     "Table",
