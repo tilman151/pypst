@@ -3,20 +3,31 @@ import pytest
 from pypst import Content, Document, Functional, SetRule
 
 
-def test_empty_functional():
-    obj = Functional()
-    assert obj.render() == "#{}"
+@pytest.mark.parametrize(
+    "obj,rendered",
+    [
+        (Functional(), "#{}"),
+        (Functional("Foo", context=True), "#context {Foo}"),
+        (
+            Functional([Content("Foo"), "This is a plain string."]),
+            "#{\n  [Foo]\n  This is a plain string.\n}",
+        ),
+    ],
+)
+def test_functional(obj, rendered):
+    assert obj.render() == rendered
 
 
-def test_nested_functional():
-    obj = Functional(Functional())
-    assert obj.render() == "#{}"
-
-    obj = Functional(Functional("Foo", context=True))
-    assert obj.render() == "#context {Foo}"
-
-    obj = Functional(Functional("Foo"), context=True)
-    assert obj.render() == "#context {Foo}"
+@pytest.mark.parametrize(
+    "obj,rendered",
+    [
+        (Functional(Functional()), "#{}"),
+        (Functional(Functional("Foo", context=True)), "#context {Foo}"),
+        (Functional(Functional("Foo"), context=True), "#context {Foo}"),
+    ],
+)
+def test_nested_functional(obj, rendered):
+    assert obj.render() == rendered
 
 
 @pytest.mark.integration

@@ -4,20 +4,31 @@ from pypst import Document, SetRule
 from pypst.content import Content
 
 
-def test_empty_content():
-    obj = Content()
-    assert obj.render() == "#[]"
+@pytest.mark.parametrize(
+    "obj,rendered",
+    [
+        (Content(), "#[]"),
+        (Content("Foo", context=True), "#context [Foo]"),
+        (
+            Content([Content("Foo"), "This is a plain string."]),
+            "#[\n  #[Foo]\n  This is a plain string.\n]",
+        ),
+    ],
+)
+def test_content(obj, rendered):
+    assert obj.render() == rendered
 
 
-def test_nested_content():
-    obj = Content(Content())
-    assert obj.render() == "#[]"
-
-    obj = Content(Content("Foo", context=True))
-    assert obj.render() == "#context [Foo]"
-
-    obj = Content(Content("Foo"), context=True)
-    assert obj.render() == "#context [Foo]"
+@pytest.mark.parametrize(
+    "obj,rendered",
+    [
+        (Content(Content()), "#[]"),
+        (Content(Content("Foo", context=True)), "#context [Foo]"),
+        (Content(Content("Foo"), context=True), "#context [Foo]"),
+    ],
+)
+def test_nested_content(obj, rendered):
+    assert obj.render() == rendered
 
 
 @pytest.mark.integration
