@@ -263,7 +263,7 @@ def render_fenced(
         return f"#{ctx}{start}{body}{end}"
 
     if "\n" in body:
-        newline = f"\n{indent * " "}"
+        newline = f"\n{indent * ' '}"
         indented = body.replace("\n", newline)
         return f"#{ctx}{start}{newline}{indented}\n{end}"
 
