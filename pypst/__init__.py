@@ -9,8 +9,8 @@ from pypst.heading import Heading
 from pypst.image import Image
 from pypst.itemize import Enumerate, Itemize
 from pypst.renderable import Plain, Renderable
-from pypst.set import Set
-from pypst.show import Show
+from pypst.set_rule import SetRule
+from pypst.show_rule import ShowRule
 
 try:
     from pypst.table import Table  # needed to be included in code completion
@@ -39,8 +39,8 @@ __all__ = [
     "Itemize",
     "Plain",
     "Renderable",
-    "Set",
-    "Show",
+    "SetRule",
+    "ShowRule",
     "Table",
 ]
 __version__ = "0.5.0"

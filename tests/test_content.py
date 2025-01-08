@@ -1,6 +1,6 @@
 import pytest
 
-from pypst import Document, Set
+from pypst import Document, SetRule
 from pypst.content import Content
 
 
@@ -23,7 +23,7 @@ def test_nested_content():
 @pytest.mark.integration
 def test_content_compile(test_compile):
     content = Content(
-        [Set("text", {"fill": "red"}), "This is page #here().page()"], context=True
+        [SetRule("text", {"fill": "red"}), "This is page #here().page()"], context=True
     )
     doc = Document([content])
     test_compile(doc)

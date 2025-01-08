@@ -7,7 +7,7 @@ from pypst.utils import render_code
 
 
 @dataclass
-class Show:
+class ShowRule:
     """
     Typst show rule.
 

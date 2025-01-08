@@ -1,6 +1,6 @@
 import pytest
 
-from pypst import Content, Document, Functional, Set
+from pypst import Content, Document, Functional, SetRule
 
 
 def test_empty_functional():
@@ -22,7 +22,7 @@ def test_nested_functional():
 @pytest.mark.integration
 def test_functional_compile(test_compile):
     content = Functional(
-        [Set("text", {"fill": "red"}), Content("This is page #here().page()")],
+        [SetRule("text", {"fill": "red"}), Content("This is page #here().page()")],
         context=True,
     )
     doc = Document([content])
