@@ -14,16 +14,16 @@ class Content:
         >>> content.render()
         '#[Foo is a bar.]'
 
-        >>> from pypst import Set
-        >>> content = Content([Set("text", {"fill": "red"}), "This text will be red."])
+        >>> from pypst import SetRule
+        >>> content = Content([SetRule("text", {"fill": "red"}), "This text will be red."])
         >>> print(content.render())
         #[
           #set text(fill: red)
           This text will be red.
         ]
 
-        >>> from pypst import Set
-        >>> content = Content([Set("text", {"fill": "red"}), "This is page #here().page()"], context=True)
+        >>> from pypst import SetRule
+        >>> content = Content([SetRule("text", {"fill": "red"}), "This is page #here().page()"], context=True)
         >>> print(content.render())
         #context [
           #set text(fill: red)

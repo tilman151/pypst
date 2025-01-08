@@ -12,12 +12,12 @@ class SetRule:
     Typst set rule.
 
     Examples:
-        >>> rule = Set(selector="text", arguments={"fill": "red"})
+        >>> rule = SetRule(selector="text", arguments={"fill": "red"})
         >>> rule.render()
         '#set text(fill: red)'
 
-        >>> from pypst import Show
-        >>> rule = Show(selector="heading", body=Set("text", {"fill": "red"}))
+        >>> from pypst import ShowRule
+        >>> rule = ShowRule(selector="heading", body=SetRule("text", {"fill": "red"}))
     """
 
     selector: str | Renderable

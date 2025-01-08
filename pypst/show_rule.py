@@ -12,11 +12,11 @@ class ShowRule:
     Typst show rule.
 
     Examples:
-        >>> rule = Show(selector="heading", body="text.with(fill: red)")
+        >>> rule = ShowRule(selector="heading", body="text.with(fill: red)")
         >>> rule.render()
         '#show heading: text.with(fill: red)'
 
-        >>> rule = Show(selector="heading", argument="it", body="text(fill: red, it)")
+        >>> rule = ShowRule(selector="heading", argument="it", body="text(fill: red, it)")
         >>> print(rule.render())
         #show heading: it => text(fill: red, it)
     """

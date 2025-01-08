@@ -10,16 +10,16 @@ class Functional:
     Functional block wrapped in {} in Typst.
 
     Examples:
-        >>> from pypst import Set, Content
-        >>> content = Functional([Set("text", {"fill": "red"}), Content("This text will be red.")])
+        >>> from pypst import SetRule, Content
+        >>> content = Functional([SetRule("text", {"fill": "red"}), Content("This text will be red.")])
         >>> print(content.render())
         #{
           set text(fill: red)
           [This text will be red.]
         }
 
-        >>> from pypst import Set, Content
-        >>> content = Functional([Set("text", {"fill": "red"}), Content("This is page #here().page()")], context=True)
+        >>> from pypst import SetRule, Content
+        >>> content = Functional([SetRule("text", {"fill": "red"}), Content("This is page #here().page()")], context=True)
         >>> print(content.render())
         #context {
           set text(fill: red)
