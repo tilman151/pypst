@@ -1,6 +1,6 @@
 import json
 import re
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import Field, dataclass, fields, is_dataclass
 from datetime import date, datetime, timedelta
 from typing import Any
@@ -233,6 +233,41 @@ def camel_to_kebab_case(arg: str) -> str:
         r"\1-\2",
         arg,
     ).lower()
+
+
+def render_fenced(
+    body: str | Renderable | Iterable[str | Renderable] | None = None,
+    context: bool = False,
+    start: str = "{",
+    end: str = "}",
+    indent: int = 2,
+    joint: str = "\n",
+    render_fn: Callable[[Any], str] = render_code,
+) -> str:
+    """
+    Render a Typst fenced code block such as #{} and #[].
+    """
+
+    context = "context " if context else ""
+
+    if isinstance(body, (str, Renderable)):
+        body = render_fn(body)
+    elif isinstance(body, Iterable):
+        body = joint.join(render_fn(entry) for entry in body)
+    elif body is None:
+        body = ""
+    else:
+        body = render_fn(body)
+
+    if indent is None:
+        return f"#{context}{start}{body}{end}"
+
+    if "\n" in body:
+        newline = f"\n{indent * " "}"
+        indented = body.replace("\n", newline)
+        return f"#{context}{start}{newline}{indented}\n{end}"
+
+    return f"#{context}{start}{body}{end}"
 
 
 class _RenderDataclass:

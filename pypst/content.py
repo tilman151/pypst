@@ -1,7 +1,8 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 from pypst.renderable import Renderable
-from pypst.utils import render
+from pypst.utils import render, render_fenced
 
 
 @dataclass
@@ -31,8 +32,9 @@ class Content:
         ]
     """
 
-    body: str | Renderable | list[str | Renderable] | None = None
+    body: str | Renderable | Iterable[str | Renderable] | None = None
     context: bool = False
+    joint: str = "\n"
     indent: int = 2
 
     def __post_init__(self) -> None:
@@ -47,22 +49,12 @@ class Content:
         """
         Render the content block to a string.
         """
-        context = "context " if self.context else ""
-
-        if isinstance(self.body, list):
-            body = "\n".join(render(entry) for entry in self.body)
-        elif self.body is None:
-            body = ""
-        else:
-            body = render(self.body)
-
-        if self.indent is None:
-            return f"#{context}[{body}]"
-
-        lines = body.splitlines()
-        if len(lines) > 1:
-            indent = self.indent * " "
-            indented = f"{indent}\n".join(lines)
-            return f"#{context}[\n{indent}{indented}\n]"
-
-        return f"#{context}[{body}]"
+        return render_fenced(
+            body=self.body,
+            context=self.context,
+            joint=self.joint,
+            indent=self.indent,
+            start="[",
+            end="]",
+            render_fn=render,
+        )
