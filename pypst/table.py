@@ -2,7 +2,10 @@ import itertools
 from dataclasses import dataclass
 from typing import Optional, Union, Literal
 
-import pandas as pd
+try:
+    import pandas as pd
+except ImportError:
+    raise ModuleNotFoundError("Could not find Pandas. To use the table functionality, Pypst needs to be installed as 'pypst[pandas]'.")
 from frozendict import frozendict
 
 from frozenlist import FrozenList
