@@ -28,7 +28,9 @@ class Show:
 
     def __post_init__(self) -> None:
         if not isinstance(self.body, (Functional, Content)):
-            self.body = Functional(self.body, indent=self.indent)
+            body = Functional(self.body, indent=self.indent)
+            assert isinstance(body, Renderable)
+            self.body = body
 
     def __str__(self) -> str:
         return self.render()
