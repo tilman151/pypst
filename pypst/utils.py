@@ -182,6 +182,12 @@ def render_dataclass(arg: Any) -> str:
     function = getattr(arg, "__is_function__", False)
     fields = dataclass_fields_to_render(arg)
 
+    def name(field: Field) -> str:
+        return field.metadata.get("name", field.name)
+
+    def value(field: Field) -> str:
+        return render_code(getattr(arg, field.name))
+
     if function:
         function = (
             function
@@ -189,17 +195,18 @@ def render_dataclass(arg: Any) -> str:
             else camel_to_kebab_case(arg.__class__.__name__)
         )
 
+        def is_positional(field: Field) -> bool:
+            return field.metadata.get("positional", False)
+
         arguments = ", ".join(
-            render_code(getattr(arg, field.name))
-            if field.metadata.get("positional", False)
-            else f"{field.name}: {render_code(getattr(arg, field.name))}"
+            value(field) if is_positional(field) else f"{name(field)}: {value(field)}"
             for field in fields
         )
 
         rendered = f"#{function}({arguments})"
     else:
         mapping = render_mapping(
-            {field.name: getattr(arg, field.name) for field in fields}
+            {name(field): getattr(arg, field.name) for field in fields}
         )
         rendered = f"#{mapping}"
 
@@ -213,6 +220,10 @@ def dataclass_fields_to_render(arg: Any) -> Iterable[Field]:
     """
 
     def check(field: Field) -> bool:
+        # Check whether the field should be skipped.
+        if field.metadata.get("skip", False):
+            return False
+
         # When the value is `None`, check whether that should be kept.
         if getattr(arg, field.name) is None:
             return field.metadata.get("keep_none", False)

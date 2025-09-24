@@ -115,11 +115,14 @@ class FooFn(utils.Function):
     __is_function__ = True
     bar: int = field(metadata={"positional": True})
     qux: int = 16
+    yes: int | None = field(default=None, metadata={"keep_none": True})
+    skip_me: int | None = field(default=None, metadata={"skip": True})
+    rename_me: int | None = field(default=1, metadata={"name": "one"})
 
 
 def test_function():
-    obj = FooFn(4)
-    assert obj.render() == "#foo-fn(4, qux: 16)"
+    obj = FooFn(4, skip_me=2)
+    assert obj.render() == "#foo-fn(4, qux: 16, yes: none, one: 1)"
     assert obj.render() == str(obj)
 
 
