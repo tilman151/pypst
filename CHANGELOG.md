@@ -1,3 +1,9 @@
+## 0.7.0 (2025-09-25)
+
+### Feat
+
+- add further dataclass field configuration (#26)
+
 ## 0.6.1 (2025-01-09)
 
 ### Fix
