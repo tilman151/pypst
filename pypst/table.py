@@ -82,7 +82,7 @@ class Table:
             >>> table = Table.from_dataframe(df, include_index=False)
             >>> print(table.render())
             #table(
-              columns: 3,
+              columns: 2,
               table.header[A][B],
               [1], [3],
               [2], [4]
