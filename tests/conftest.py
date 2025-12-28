@@ -90,6 +90,11 @@ def df_multi_index():
 
 
 @pytest.fixture
+def df_no_index():
+    return Table.from_dataframe(DATA_FRAME, include_index=False)
+
+
+@pytest.fixture
 def styled_table(request):
     return create_table(*request.param)
 

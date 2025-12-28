@@ -51,21 +51,21 @@ class Table:
     _lines: Optional[list["TableLine"]] = None
 
     @classmethod
-    def from_dataframe(cls, df: pd.DataFrame) -> "Table":
+    def from_dataframe(cls, df: pd.DataFrame, include_index: bool = True) -> "Table":
         """
         Create a new table element from a Pandas DataFrame.
 
-        The `columns` property of the data frame will be used as the header data and
-        the `index` property will be used as the index data.
-        The header is rendered as the `table.header` element and the index as the
-        first columns in each row.
-        Multi-level indexes are supported.
+        The `columns` property of the data frame will be used as the header data, and
+        the `index` property will be used as the index data if `include_index` is set
+        to `True`. The header is rendered as the `table.header` element and the index
+        as leading columns of each row. Multi-level indexes are supported.
 
         After creating the table, styling options can be set using the properties of
         the table class.
 
         Args:
             df: The DataFrame to create the table from.
+            include_index: Whether to include the DataFrame's index as leading columns.
 
         Examples:
             >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
@@ -76,6 +76,16 @@ class Table:
               table.header[][A][B],
               [X], [1], [3],
               [Y], [2], [4]
+            )
+
+            >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["X", "Y"])
+            >>> table = Table.from_dataframe(df, include_index=False)
+            >>> print(table.render())
+            #table(
+              columns: 2,
+              table.header[A][B],
+              [1], [3],
+              [2], [4]
             )
 
             >>> df = pd.DataFrame(
@@ -111,7 +121,8 @@ class Table:
         """
         table = cls()
         table.header_data = _parse_index(df.columns, direction="cols")
-        table.index_data = _parse_index(df.index, direction="rows")
+        if include_index:
+            table.index_data = _parse_index(df.index, direction="rows")
         row_data: FrozenList[FrozenList[Cell]] = FrozenList([])
         for _, *row in df.itertuples():
             row_cells = FrozenList([Cell(value) for value in row])
@@ -119,7 +130,7 @@ class Table:
             row_data.append(row_cells)
         row_data.freeze()
         table.row_data = row_data
-        table.columns = len(df.columns) + df.index.nlevels
+        table.columns = len(df.columns) + (df.index.nlevels if include_index else 0)
 
         return table
 
@@ -649,14 +660,17 @@ class Table:
             The rendered table element.
         """
         headers = itertools.chain(*self.header_data)
-        index_placeholder = Cell(
-            rowspan=len(self.header_data), colspan=len(self.index_data)
-        )
+        if len(self.index_data):
+            index_placeholder = Cell(
+                rowspan=len(self.header_data), colspan=len(self.index_data)
+            ).render()
+        else:
+            index_placeholder = ""
         inner = (
             self._render_args()
             + self._render_lines()
             + "table.header"
-            + index_placeholder.render()
+            + index_placeholder
             + "".join(header.render() for header in headers)
             + ",\n"
             + self._render_rows()
