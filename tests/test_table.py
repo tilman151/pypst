@@ -55,6 +55,16 @@ def test_render_multi_index(df_multi_index):
     )
 
 
+def test_render_no_index(df_no_index):
+    rendered = df_no_index.render().replace("\n  ", "\n")
+    assert rendered == (
+        "#table(\ncolumns: 3,\ntable.header[A][B][C],"
+        "\n[1], [4], [7],"
+        "\n[2], [5], [8],"
+        "\n[3], [6], [9]\n)"
+    )
+
+
 def test_render_custom_col(df):
     df.columns = ["10%", "20%", "30%", "40%"]
     rendered = df.render().replace("\n  ", "\n")
@@ -199,6 +209,14 @@ def test_attributes_are_frozen(table, tmp_path, request):
 def test_compilation(styled_table, tmp_path):
     with open(tmp_path / "table.typ", mode="wt") as f:
         f.write(styled_table.render())
+
+    typst.compile(tmp_path / "table.typ")
+
+
+@pytest.mark.integration
+def test_compilation_no_index(df_no_index, tmp_path):
+    with open(tmp_path / "table.typ", mode="wt") as f:
+        f.write(df_no_index.render())
 
     typst.compile(tmp_path / "table.typ")
 
