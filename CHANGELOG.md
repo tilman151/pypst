@@ -1,3 +1,9 @@
+## 0.8.0 (2025-12-29)
+
+### Feat
+
+- add option to exclude index from rendering (#27)
+
 ## 0.7.0 (2025-09-25)
 
 ### Feat
