@@ -2,8 +2,10 @@ import pytest
 import typst
 from frozenlist import FrozenList
 
+import pandas as pd
+
 from pypst import Cell
-from pypst.table import TableLine
+from pypst.table import TableLine, Table
 from tests.conftest import generate_all_combinations, create_table
 
 
@@ -186,6 +188,41 @@ def test_render_lines(df, lines, rendered_lines):
         "\n[0], [1], [4], [7],"
         "\n[1], [2], [5], [8],"
         "\n[2], [3], [6], [9]\n)"
+    )
+
+
+@pytest.mark.regression
+def test_multi_index_issue():
+    """Check #29"""
+    col = pd.MultiIndex.from_arrays(
+        [["Col1", "Col1", "Col2", "Col2"], ["C", "B", "C", "B"]])
+    df = pd.DataFrame([[1, 2, 3, 4]], columns=col)
+
+    t = Table.from_dataframe(df)
+    assert t.render().replace("\n  ", "\n") == (
+        "#table(\ncolumns: 5,\n"
+        "table.header[#table.cell(rowspan: 2)[]]"
+        "[#table.cell(colspan: 2)[Col1]][#table.cell(colspan: 2)[Col2]]"
+        "[C][B][C][B],\n"
+        "[0], [1], [2], [3], [4]\n)"
+    )
+
+
+@pytest.mark.regression
+def test_multi_index_issue_rows():
+    """Check #29"""
+    idx = pd.MultiIndex.from_arrays(
+        [["Row1", "Row1", "Row2", "Row2"], ["C", "B", "C", "B"]])
+    df = pd.DataFrame([[1, 2], [3, 4], [5, 6], [7, 8]], index=idx, columns=["A", "B"])
+
+    t = Table.from_dataframe(df)
+    assert t.render().replace("\n  ", "\n") == (
+        "#table(\ncolumns: 4,\n"
+        "table.header[#table.cell(colspan: 2)[]][A][B],\n"
+        "[#table.cell(rowspan: 2)[Row1]], [C], [1], [2],\n"
+        "[B], [3], [4],\n"
+        "[#table.cell(rowspan: 2)[Row2]], [C], [5], [6],\n"
+        "[B], [7], [8]\n)"
     )
 
 
