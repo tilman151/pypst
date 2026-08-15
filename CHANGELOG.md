@@ -1,3 +1,9 @@
+## 0.8.1 (2026-08-15)
+
+### Fix
+
+- bug in rendering multi-indices (#30)
+
 ## 0.8.0 (2025-12-29)
 
 ### Feat
