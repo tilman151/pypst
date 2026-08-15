@@ -56,6 +56,7 @@ build-backend = "poetry.core.masonry.api"
 markers = [
     "integration: mark a test as an integration test that compiles Typst code",
     "visual: mark a test as a visual test used for manual inspection",
+    "regression: mark a test as a regression test for an old bug"
 ]
 testpaths = ["tests", "pypst"]
 addopts = "--doctest-modules"

@@ -816,7 +816,7 @@ def _parse_level(
             setattr(headers[-1], span_arg, span)
             prev_code = code
             span = 1
-    headers.append(Cell(index.levels[level][-1]))
+    headers.append(Cell(index.levels[level][prev_code]))
     setattr(headers[-1], span_arg, span)
 
     return headers
